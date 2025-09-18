@@ -1,0 +1,12 @@
+[project]
+name = "b-pervak-cup"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiogram>=3.22.0",
+    "fastapi[all]>=0.116.2",
+    "tortoise-orm>=0.21.7",
+    "aiosqlite>=0.20.0",
+]
