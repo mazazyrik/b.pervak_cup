@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CameraCapture } from '@features/camera/CameraCapture'
 import { CreatePost } from '@features/posts/CreatePost'
-import { Screen } from '@shared/ui/Screen'
-import bg from '../../макет б/сфоткать.svg'
 
 export function Camera() {
   const [last, setLast] = useState<string | null>(null)
@@ -25,18 +23,17 @@ export function Camera() {
   }, [])
 
   return (
-    <Screen bg={bg}>
-      <div className='p-4 pt-[72px]'>
-        <CameraCapture shootRef={shootRef} onCapture={(b, url) => { setLast(url); onCaptured(b, url) }} />
-        {last && (
-          <div className='flex items-center gap-3 mt-2'>
-            <img src={last} alt='' className='w-16 h-16 object-cover rounded-md' />
-            <div className='text-sm text-neutral-400'>Снимок сохранен локально</div>
-          </div>
-        )}
-      </div>
-      <button onClick={() => shootRef.current?.()} className='absolute left-[156px] top-[618px] w-[90px] h-[90px] rounded-full bg-transparent' aria-label='shoot' />
-    </Screen>
+    <div className='p-4 flex flex-col gap-3'>
+      <div className='text-xl font-semibold mb-1'>Сфоткать</div>
+      <CameraCapture shootRef={shootRef} onCapture={(b, url) => { setLast(url); onCaptured(b, url) }} />
+      {last && (
+        <div className='flex items-center gap-3'>
+          <img src={last} alt='' className='w-16 h-16 object-cover rounded-md' />
+          <div className='text-sm text-neutral-400'>Снимок сохранен локально</div>
+        </div>
+      )}
+      <button onClick={() => shootRef.current?.()} className='h-12 rounded-full bg-white text-black'>Сфоткать</button>
+    </div>
   )
 }
 

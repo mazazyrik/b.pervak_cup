@@ -1,7 +1,9 @@
-import { Screen } from '@shared/ui/Screen'
-import bg from '../../макет б/угадай исход.svg'
-
 export function Guess() {
-  return <Screen bg={bg} />
+  return (
+    <div className='p-4'>
+      <div className='text-xl font-semibold mb-2'>Угадай исход</div>
+      <div className='text-sm text-neutral-400'>Скоро...</div>
+    </div>
+  )
 }
 
