@@ -13,8 +13,7 @@ class PostCreate(PostBase):
 
 
 class PostUpdate(BaseModel):
-    photo_url: str | None = None
-    checked: bool | None = None
+    checked: bool
 
 
 class PostOut(PostBase):

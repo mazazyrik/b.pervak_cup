@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
@@ -24,6 +26,10 @@ app.include_router(teams_router)
 app.include_router(users_router)
 app.include_router(matches_router)
 app.include_router(posts_router)
+
+_MEDIA_ROOT = Path(__file__).resolve().parents[2] / 'media'
+_MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+app.mount('/media', StaticFiles(directory=str(_MEDIA_ROOT)), name='media')
 
 register_tortoise(
     app,

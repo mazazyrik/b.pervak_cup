@@ -3,7 +3,6 @@ import { toast } from 'sonner'
 import { api } from '@shared/api/http'
 import { router } from '@app/router'
 import { useAuth } from '@entities/user/model/useAuth'
-import { chooseUploader } from '@shared/lib/uploader'
 
 export function CreatePost() {
   const [lastShot, setLastShot] = useState<string | null>(null)
@@ -33,9 +32,13 @@ export function CreatePost() {
   const onCaptured = async (blob: Blob, url: string) => {
     setLastShot(url)
     try {
-      const { url: publicUrl } = await chooseUploader().upload(blob)
       const uid = userId || await ensureUser()
-      await api.post('/posts', { user_id: uid, photo_url: publicUrl, checked: false })
+      const f = new FormData()
+      f.append('user_id', String(uid))
+      f.append('checked', 'false')
+      f.append('file', new File([blob], 'photo.jpg', { type: 'image/jpeg' }))
+      const r = await api.post('/posts', f, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const publicUrl: string = r.data?.photo_url
       const username = `user_${(useAuth.getState().telegramId || (import.meta.env as any).VITE_DEV_TG_ID || '123')}`
       router.navigate({ to: '/success', search: { photo_url: publicUrl, username } })
     } catch (e) {

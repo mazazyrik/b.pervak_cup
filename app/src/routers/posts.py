@@ -1,7 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    UploadFile,
+    File,
+    Form,
+    Request,
+)
 from app.src.crud import Post, User
-from app.src.schemas.post import PostCreate, PostUpdate, PostOut
+from app.src.schemas.post import PostUpdate, PostOut
 from app.src.routers.auth import require_auth
+from pathlib import Path
+from uuid import uuid4
 
 
 router = APIRouter(prefix='/posts', tags=['posts'])
@@ -23,15 +33,28 @@ async def list_unchecked_posts(
 
 @router.post('/', response_model=PostOut, status_code=201)
 async def create_post(
-    payload: PostCreate, _: str = Depends(require_auth)
+    request: Request,
+    user_id: int = Form(...),
+    file: UploadFile = File(...),
+    checked: bool = Form(False),
+    _: str = Depends(require_auth),
 ) -> PostOut:
-    user = await User.get_or_none(id=payload.user_id)
+    user = await User.get_or_none(id=user_id)
     if not user:
         raise HTTPException(status_code=400, detail='invalid_user')
+    media_root = Path(__file__).resolve().parents[3] / 'media'
+    media_root.mkdir(parents=True, exist_ok=True)
+    suffix = Path(file.filename or '').suffix or '.jpg'
+    name = f'{uuid4().hex}{suffix}'
+    save_path = media_root / name
+    content = await file.read()
+    save_path.write_bytes(content)
+    base = str(request.base_url).rstrip('/')
+    public_url = f'{base}/media/{name}'
     post = await Post.create(
         user_id=user.id,
-        photo_url=payload.photo_url,
-        checked=payload.checked,
+        photo_url=public_url,
+        checked=checked,
     )
     return PostOut.model_validate(post)
 
