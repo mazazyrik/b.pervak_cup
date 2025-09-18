@@ -33,15 +33,22 @@ export function useCamera(): UseCamera {
     setFallbackEnabled(false)
     const constraints: MediaStreamConstraints = custom || {
       video: {
-        facingMode: 'environment',
+        facingMode: { ideal: 'environment' },
         width: { ideal: 1280 },
         height: { ideal: 720 }
       },
       audio: false
     }
     try {
-      const p = navigator.mediaDevices.getUserMedia(constraints)
-      const s = await withTimeout(p, 1500)
+      let s: MediaStream | null = null
+      try {
+        s = await withTimeout(navigator.mediaDevices.getUserMedia(constraints), 4000)
+      } catch {
+        s = await withTimeout(
+          navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }),
+          4000
+        )
+      }
       streamRef.current = s
       const v = videoRef.current
       if (!v) throw new Error('no_video')
@@ -76,7 +83,7 @@ export function useCamera(): UseCamera {
   useEffect(() => {
     const onVis = async () => {
       if (document.hidden) stop()
-      else await start().catch(() => {})
+      else if (streamRef.current) await start().catch(() => {})
     }
     document.addEventListener('visibilitychange', onVis)
     const onOrient = async () => {

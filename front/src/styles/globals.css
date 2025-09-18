@@ -13,7 +13,10 @@ html, body, #root {
 
 body {
   margin: 0;
-  background: var(--tg-bg);
+  background-color: var(--tg-bg);
+  background-image: url('/fon.png');
+  background-size: cover;
+  background-position: center;
   color: var(--tg-text);
 }
 

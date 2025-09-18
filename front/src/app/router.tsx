@@ -8,6 +8,7 @@ import { Toaster } from 'sonner'
 import { AuthBootstrap } from '@entities/user/model/AuthBootstrap'
 import { AppShell } from '@shared/ui/AppShell'
 import { Guess } from '@pages/Guess'
+import { PostSuccess } from '@pages/PostSuccess'
 
 const Root = () => (
   <ThemeProvider>
@@ -28,7 +29,8 @@ const cameraRoute = createRoute({ getParentRoute: () => rootRoute, path: '/camer
 const feedRoute = createRoute({ getParentRoute: () => rootRoute, path: '/feed', component: Feed })
 
 const guessRoute = createRoute({ getParentRoute: () => rootRoute, path: '/guess', component: Guess })
-const routeTree = rootRoute.addChildren([homeRoute, cameraRoute, feedRoute, guessRoute])
+const successRoute = createRoute({ getParentRoute: () => rootRoute, path: '/success', component: PostSuccess })
+const routeTree = rootRoute.addChildren([homeRoute, cameraRoute, feedRoute, guessRoute, successRoute])
 
 export const router = createRouter({ routeTree })
 declare module '@tanstack/react-router' {

@@ -2,15 +2,24 @@ import axios from 'axios'
 import { useAuth } from '@entities/user/model/useAuth'
 import { toast } from 'sonner'
 
+function resolveBaseUrl() {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL as string
+  const { protocol, hostname } = window.location
+  return `${protocol}//${hostname}:8000`
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
+  baseURL: resolveBaseUrl(),
+  withCredentials: true
 })
 
 api.interceptors.request.use((config) => {
-  const { telegramId } = useAuth.getState()
-  if (telegramId) {
+  const state = useAuth.getState()
+  const devId = (import.meta.env as any).VITE_DEV_TG_ID || '123'
+  const token = state.telegramId || (import.meta.env.DEV ? devId : null)
+  if (token) {
     config.headers = config.headers || {}
-    config.headers['Authorization'] = `Bearer ${telegramId}`
+    ;(config.headers as any)['Authorization'] = `Bearer ${token}`
   }
   return config
 })
@@ -33,8 +42,10 @@ api.interceptors.response.use(
       if (!isLoggingIn) {
         isLoggingIn = true
         try {
-          const { telegramId } = useAuth.getState()
-          if (telegramId) await api.post('/auth/login', { telegram_id: telegramId })
+          const state = useAuth.getState()
+          const devId = (import.meta.env as any).VITE_DEV_TG_ID || '123'
+          const token = state.telegramId || (import.meta.env.DEV ? devId : null)
+          if (token) await api.post('/auth/login', { telegram_id: token })
         } catch {}
         isLoggingIn = false
       }

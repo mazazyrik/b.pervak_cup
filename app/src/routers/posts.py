@@ -13,8 +13,18 @@ async def list_posts(_: str = Depends(require_auth)) -> list[PostOut]:
     return [PostOut.model_validate(p) for p in items]
 
 
+@router.get('/unchecked', response_model=list[PostOut])
+async def list_unchecked_posts(
+    _: str = Depends(require_auth)
+) -> list[PostOut]:
+    items = await Post.filter(checked=False).order_by('-created_at')
+    return [PostOut.model_validate(p) for p in items]
+
+
 @router.post('/', response_model=PostOut, status_code=201)
-async def create_post(payload: PostCreate, _: str = Depends(require_auth)) -> PostOut:
+async def create_post(
+    payload: PostCreate, _: str = Depends(require_auth)
+) -> PostOut:
     user = await User.get_or_none(id=payload.user_id)
     if not user:
         raise HTTPException(status_code=400, detail='invalid_user')
@@ -35,7 +45,9 @@ async def get_post(post_id: int, _: str = Depends(require_auth)) -> PostOut:
 
 
 @router.put('/{post_id}', response_model=PostOut)
-async def update_post(post_id: int, payload: PostUpdate, _: str = Depends(require_auth)) -> PostOut:
+async def update_post(
+    post_id: int, payload: PostUpdate, _: str = Depends(require_auth)
+) -> PostOut:
     post = await Post.get_or_none(id=post_id)
     if not post:
         raise HTTPException(status_code=404, detail='not_found')
