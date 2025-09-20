@@ -1,6 +1,7 @@
 from tortoise import fields
 from tortoise.models import Model
 from app.src._utill_tools import current_file_dir, translit
+import re
 
 
 class Team(Model):
@@ -32,8 +33,13 @@ class Match(Model):
         'models.Team', related_name='matches_as_team2')
     stage_name = fields.CharField(max_length=255)
     date = fields.DatetimeField()
-    # 1:0 или как-то так, такой стандарт, чтобы не было путаницы
     result = fields.CharField(max_length=255)
+
+    async def save(self, *args, **kwargs):
+        if self.result is not None:
+            if not _is_valid_score(self.result):
+                raise ValueError('invalid_result')
+        await super().save(*args, **kwargs)
 
 
 class Bet(Model):
@@ -42,8 +48,13 @@ class Bet(Model):
         'models.User', related_name='bets')
     match = fields.ForeignKeyField(
         'models.Match', related_name='bets')
-    # также как и в матче
     result = fields.CharField(max_length=255)
+
+    async def save(self, *args, **kwargs):
+        if self.result is not None:
+            if not _is_valid_score(self.result):
+                raise ValueError('invalid_result')
+        await super().save(*args, **kwargs)
 
 
 class Post(Model):
@@ -56,3 +67,19 @@ class Post(Model):
 
 
 __all__ = ['Team', 'User', 'Match', 'Bet', 'Post']
+
+_score_re = re.compile(r'^[0-9]{1,2}:[0-9]{1,2}$')
+
+
+def _is_valid_score(value: str) -> bool:
+    if not isinstance(value, str):
+        return False
+    if not _score_re.match(value):
+        return False
+    left, right = value.split(':', 1)
+    try:
+        a = int(left)
+        b = int(right)
+    except ValueError:
+        return False
+    return 0 <= a <= 99 and 0 <= b <= 99

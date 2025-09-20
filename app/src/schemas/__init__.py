@@ -1,1 +1,1 @@
-__all__ = ['team', 'user', 'match', 'auth']
+__all__ = ['team', 'user', 'match', 'auth', 'bet']

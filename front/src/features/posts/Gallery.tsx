@@ -2,15 +2,32 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@shared/api/http'
 import type { Post } from '@entities/post/model/types'
 import { Link } from '@tanstack/react-router'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 export function Gallery() {
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
       const r = await api.get<Post[]>('/posts')
       return r.data
     }
   })
+
+  const pageSize = 20
+  const [page, setPage] = useState(1)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const items = useMemo(() => (data ? data.slice(0, page * pageSize) : []), [data, page])
+
+  useEffect(() => {
+    if (!data || !sentinelRef.current) return
+    const el = sentinelRef.current
+    const io = new IntersectionObserver((entries) => {
+      const e = entries[0]
+      if (e.isIntersecting) setPage((p) => (p * pageSize < data.length ? p + 1 : p))
+    })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [data])
 
   return (
     <div className='p-4'>
@@ -21,9 +38,9 @@ export function Gallery() {
           ))}
         </div>
       )}
-      {!!data && data.length > 0 && (
+      {!!items && items.length > 0 && (
         <div className='columns-2 gap-2 sm:columns-3'>
-          {data.map((p, idx) => {
+          {items.map((p, idx) => {
             const src = p.photo_url.startsWith('blob:') ? p.photo_url.slice(5) : p.photo_url
             const h = 140 + (idx % 3) * 40
             return (
@@ -43,6 +60,7 @@ export function Gallery() {
       {!!data && data.length === 0 && (
         <div className='text-center text-sm text-neutral-400 py-10'>Пока постов нет</div>
       )}
+      <div ref={sentinelRef} />
     </div>
   )
 }

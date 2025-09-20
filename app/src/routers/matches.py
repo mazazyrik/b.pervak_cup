@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.src.crud import Match, Team, Bet
+from app.src.crud import Match, Team, Bet, User
 from app.src.schemas.match import MatchCreate, MatchUpdate, MatchOut
 from app.src.routers.auth import require_auth
 
@@ -40,6 +40,35 @@ async def get_match(match_id: int, _: str = Depends(require_auth)) -> MatchOut:
     if not match:
         raise HTTPException(status_code=404, detail='not_found')
     return MatchOut.model_validate(match)
+
+
+@router.get('/user/{telegram_id}', response_model=list[MatchOut])
+async def get_user_fav_team_matches(
+    telegram_id: int,
+    _: str = Depends(require_auth),
+) -> list[MatchOut]:
+    user = await User.get_or_none(telegram_id=telegram_id)
+    if not user:
+        raise HTTPException(status_code=404, detail='not_found')
+    matches = await Match.filter(team1_id=user.fav_team_id)
+    return [MatchOut.model_validate(m) for m in matches]
+
+
+@router.get('/user/{telegram_id}/recent', response_model=list[MatchOut])
+async def show_recent_matche_by_fav_team(
+    telegram_id: int,
+    _: str = Depends(require_auth),
+) -> list[MatchOut]:
+    user = await User.get_or_none(telegram_id=telegram_id)
+    if not user:
+        raise HTTPException(status_code=404, detail='not_found')
+    matches = (
+        await Match.filter(team1_id=user.fav_team_id) or
+        await Match.filter(team2_id=user.fav_team_id)
+    )
+    matches_list = [MatchOut.model_validate(m) for m in matches]
+
+    return matches_list[:2]
 
 
 @router.put('/{match_id}', response_model=MatchOut)

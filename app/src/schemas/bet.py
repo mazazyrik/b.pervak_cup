@@ -1,17 +1,14 @@
 from pydantic import BaseModel, field_validator
-from datetime import datetime
 import re
 
 
 _score_re = re.compile(r'^[0-9]{1,2}:[0-9]{1,2}$')
 
 
-class MatchBase(BaseModel):
-    team1_id: int
-    team2_id: int
-    date: datetime
+class BetBase(BaseModel):
+    user_id: int
+    match_id: int
     result: str
-    stage_name: str
 
     @field_validator('result')
     @classmethod
@@ -26,16 +23,12 @@ class MatchBase(BaseModel):
         return v
 
 
-class MatchCreate(MatchBase):
+class BetCreate(BetBase):
     pass
 
 
-class MatchUpdate(BaseModel):
-    team1_id: int | None = None
-    team2_id: int | None = None
-    date: datetime | None = None
+class BetUpdate(BaseModel):
     result: str | None = None
-    stage_name: str | None = None
 
     @field_validator('result')
     @classmethod
@@ -52,7 +45,7 @@ class MatchUpdate(BaseModel):
         return v
 
 
-class MatchOut(MatchBase):
+class BetOut(BetBase):
     id: int
 
     class Config:
