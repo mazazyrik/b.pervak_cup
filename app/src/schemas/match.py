@@ -10,12 +10,16 @@ class MatchBase(BaseModel):
     team1_id: int
     team2_id: int
     date: datetime
-    result: str
+    result: str | None = None
     stage_name: str
 
     @field_validator('result')
     @classmethod
-    def validate_result(cls, v: str) -> str:
+    def validate_result(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if isinstance(v, str) and v.lower() == 'null':
+            return None
         if not isinstance(v, str) or not _score_re.match(v):
             raise ValueError('invalid_result')
         left, right = v.split(':', 1)
@@ -31,17 +35,15 @@ class MatchCreate(MatchBase):
 
 
 class MatchUpdate(BaseModel):
-    team1_id: int | None = None
-    team2_id: int | None = None
-    date: datetime | None = None
     result: str | None = None
-    stage_name: str | None = None
 
     @field_validator('result')
     @classmethod
     def validate_result(cls, v: str | None) -> str | None:
         if v is None:
             return v
+        if isinstance(v, str) and v.lower() == 'null':
+            return None
         if not isinstance(v, str) or not _score_re.match(v):
             raise ValueError('invalid_result')
         left, right = v.split(':', 1)

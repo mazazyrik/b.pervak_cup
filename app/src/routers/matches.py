@@ -51,7 +51,8 @@ async def get_user_fav_team_matches(
     if not user:
         raise HTTPException(status_code=404, detail='not_found')
     matches = await Match.filter(team1_id=user.fav_team_id)
-    return [MatchOut.model_validate(m) for m in matches]
+    matches2 = await Match.filter(team2_id=user.fav_team_id)
+    return [MatchOut.model_validate(m) for m in matches + matches2]
 
 
 @router.get('/user/{telegram_id}/recent', response_model=list[MatchOut])
@@ -62,13 +63,18 @@ async def show_recent_matche_by_fav_team(
     user = await User.get_or_none(telegram_id=telegram_id)
     if not user:
         raise HTTPException(status_code=404, detail='not_found')
-    matches = (
-        await Match.filter(team1_id=user.fav_team_id) or
-        await Match.filter(team2_id=user.fav_team_id)
-    )
-    matches_list = [MatchOut.model_validate(m) for m in matches]
-
-    return matches_list[:2]
+    left = await Match.filter(
+        team1_id=user.fav_team_id,
+        result__isnull=False,
+    ).exclude(result='Null').order_by('-date')
+    right = await Match.filter(
+        team2_id=user.fav_team_id,
+        result__isnull=False,
+    ).exclude(result='Null').order_by('-date')
+    matches = list(left) + list(right)
+    matches.sort(key=lambda m: m.date, reverse=True)
+    matches_list = [MatchOut.model_validate(m) for m in matches[:2]]
+    return matches_list
 
 
 @router.put('/{match_id}', response_model=MatchOut)
@@ -92,17 +98,12 @@ async def update_match(
             raise HTTPException(status_code=400, detail='invalid_team2')
         update_data['team2_id'] = t2.id
 
-    if 'stage_name' in update_data:
-        update_data['stage_name'] = update_data['stage_name']
-        update_data.pop('stage_name', None)
-
+    new_result = update_data.get('result') if 'result' in update_data else None
     if 'result' in update_data:
-        update_data['result'] = update_data['result']
-        update_data.pop('result', None)
         bets = await Bet.filter(match_id=match_id)
         for bet in bets:
-            if bet.result == update_data['result']:
-                pass  # кидаем пуш в бота
+            if new_result is not None and bet.result == new_result:
+                pass  # TODO: кидаем пуш в бота
 
     if update_data:
         await Match.filter(id=match_id).update(**update_data)

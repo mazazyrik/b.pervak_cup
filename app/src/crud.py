@@ -33,7 +33,7 @@ class Match(Model):
         'models.Team', related_name='matches_as_team2')
     stage_name = fields.CharField(max_length=255)
     date = fields.DatetimeField()
-    result = fields.CharField(max_length=255)
+    result = fields.CharField(max_length=255, null=True)
 
     async def save(self, *args, **kwargs):
         if self.result is not None:
@@ -48,7 +48,7 @@ class Bet(Model):
         'models.User', related_name='bets')
     match = fields.ForeignKeyField(
         'models.Match', related_name='bets')
-    result = fields.CharField(max_length=255)
+    result = fields.CharField(max_length=255, null=True)
 
     async def save(self, *args, **kwargs):
         if self.result is not None:

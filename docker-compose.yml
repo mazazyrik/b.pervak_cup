@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: app/src/Dockerfile
+    container_name: bpc-backend
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./database.db:/app/database.db
+      - ./media:/app/media
+    expose:
+      - '8000'
+
+  bot:
+    build:
+      context: .
+      dockerfile: app/bot/Dockerfile
+    container_name: bpc-bot
+    environment:
+      - API_BASE_URL=http://backend:8000
+      - BOT_TOKEN=${BOT_TOKEN}
+      - MINI_APP_URL=http://77.110.112.125
+      - RANEPASPORT_CHANNEL=${RANEPASPORT_CHANNEL:-@ranepasport}
+      - BALBESCREW_CHANNEL=${BALBESCREW_CHANNEL:-@balbescrew}
+      - BDEV_CHANNEL=${BDEV_CHANNEL:-@bdevbync}
+    depends_on:
+      - backend
+
+  nginx:
+    build:
+      context: .
+      dockerfile: deploy/nginx.Dockerfile
+      args:
+        - VITE_API_URL=/api
+    container_name: bpc-nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+
+volumes: {}
+

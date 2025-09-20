@@ -1,6 +1,7 @@
 # flake8: noqa: E501
 import os
 
+
 current_file_path = os.path.abspath(__file__)
 current_file_dir = os.path.dirname(current_file_path)
 
@@ -17,3 +18,4 @@ def translit(s: str) -> str:
     for ch in s:
         out.append(_map.get(ch, ch))
     return ''.join(out)
+

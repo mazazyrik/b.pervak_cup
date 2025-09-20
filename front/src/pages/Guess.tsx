@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 type Match = { id: number; team1_id: number; team2_id: number; date: string; result: string; stage_name: string }
 type Team = { id: number; name: string; logo_url?: string }
+type Bet = { id: number; user_id: number; match_id: number; result: string }
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/\s+/g, '_')
@@ -21,7 +22,7 @@ function isValidScore(v: string) {
 
 export function Guess() {
   const { telegramId } = useAuth()
-  const effectiveTgId = telegramId || (import.meta.env as any).VITE_DEV_TG_ID || '123'
+  const effectiveTgId = telegramId
   const teamsQ = useQuery({
     queryKey: ['teams'],
     queryFn: async () => (await api.get<Team[]>('/teams')).data
@@ -36,9 +37,19 @@ export function Guess() {
     queryFn: async () => (await api.get<Match[]>(`/matches/user/${effectiveTgId}/recent`)).data,
     enabled: !!effectiveTgId
   })
+  const betsQ = useQuery({
+    queryKey: ['bets', 'byUser', effectiveTgId],
+    queryFn: async () => {
+      const uid = useAuth.getState().userId || (await ensureUser())
+      const r = await api.get<Bet[]>('/bets')
+      return r.data.filter((b) => b.user_id === uid)
+    },
+    enabled: !!effectiveTgId
+  })
 
   const [scores, setScores] = useState<Record<number, string>>({})
   const [pending, setPending] = useState<Record<number, boolean>>({})
+  const [locked, setLocked] = useState<Record<number, boolean>>({})
 
   const teamsMap = useMemo(() => {
     const map: Record<number, Team> = {}
@@ -49,9 +60,9 @@ export function Guess() {
 
   const getLogo = (t?: Team) => {
     if (!t) return undefined
-    if ((t as any).logo_url) return (t as any).logo_url as string
-    const slug = slugify(t.name)
-    return `/media/${slug}.png`
+    const base = (import.meta.env as any).VITE_LOGO_BASE || 'https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/.logos/'
+    const filename = encodeURIComponent(t.name.toLowerCase()) + '.png'
+    return base + filename
   }
 
   const ensureUser = async (): Promise<number> => {
@@ -73,6 +84,21 @@ export function Guess() {
     return id
   }
 
+  useEffect(() => {
+    const list = betsQ.data || []
+    if (list.length === 0) return
+    setScores((s) => {
+      const next = { ...s }
+      for (const b of list) next[b.match_id] = b.result
+      return next
+    })
+    setLocked((l) => {
+      const next = { ...l }
+      for (const b of list) next[b.match_id] = true
+      return next
+    })
+  }, [betsQ.data])
+
   const submit = async (m: Match) => {
     const val = scores[m.id]
     if (!isValidScore(val || '')) {
@@ -84,6 +110,7 @@ export function Guess() {
       const uid = useAuth.getState().userId || (await ensureUser())
       await api.post('/bets', { user_id: uid, match_id: m.id, result: val })
       toast.success('Ставка принята')
+      setLocked((l) => ({ ...l, [m.id]: true }))
     } catch (e) {
       toast.error('Не удалось отправить ставку')
     } finally {
@@ -108,6 +135,7 @@ export function Guess() {
     const v = scores[m.id] || ''
     const [l, r] = v.split(':')
     const ok = isValidScore(v)
+    const isLocked = !!locked[m.id]
     return (
       <div key={m.id} className='rounded-2xl p-3 bg-black/40 border border-white/10 mb-3'>
         <div className='flex items-center justify-between gap-3'>
@@ -116,9 +144,9 @@ export function Guess() {
             <div className='text-sm font-medium text-center'>{t1?.name || `Команда ${m.team1_id}`}</div>
           </div>
           <div className='flex items-center gap-2'>
-            <input value={l || ''} onChange={(e) => onChangeLeft(m, e.target.value)} inputMode='numeric' pattern='[0-9]*' className='w-12 h-12 text-center text-lg rounded-lg bg-neutral-900 border border-white/10' />
+            <input value={l || ''} onChange={(e) => onChangeLeft(m, e.target.value)} inputMode='numeric' pattern='[0-9]*' disabled={isLocked} className='w-12 h-12 text-center text-lg rounded-lg bg-neutral-900 border border-white/10 disabled:opacity-60' />
             <div className='w-4 text-center'>:</div>
-            <input value={r || ''} onChange={(e) => onChangeRight(m, e.target.value)} inputMode='numeric' pattern='[0-9]*' className='w-12 h-12 text-center text-lg rounded-lg bg-neutral-900 border border-white/10' />
+            <input value={r || ''} onChange={(e) => onChangeRight(m, e.target.value)} inputMode='numeric' pattern='[0-9]*' disabled={isLocked} className='w-12 h-12 text-center text-lg rounded-lg bg-neutral-900 border border-white/10 disabled:opacity-60' />
           </div>
           <div className='flex-1 flex flex-col items-center gap-1'>
             <img src={getLogo(t2)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-10 object-contain' />
@@ -126,7 +154,7 @@ export function Guess() {
           </div>
         </div>
         <div className='mt-3 flex justify-center'>
-          <button disabled={!ok || !!pending[m.id]} onClick={() => submit(m)} className={'px-4 py-2 rounded-full text-sm ' + (ok ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400')}>{pending[m.id] ? '...' : 'Поставить'}</button>
+          <button disabled={isLocked || !ok || !!pending[m.id]} onClick={() => submit(m)} className={'px-4 py-2 rounded-full text-sm ' + (isLocked ? 'bg-neutral-800 text-neutral-400' : ok ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400')}>{isLocked ? 'Ставка принята' : pending[m.id] ? '...' : 'Поставить'}</button>
         </div>
       </div>
     )
@@ -153,7 +181,7 @@ export function Guess() {
                       <img src={getLogo(t1)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-8 object-contain' />
                       <div className='text-sm'>{t1?.name || `Команда ${m.team1_id}`}</div>
                     </div>
-                    <div className='opacity-70'>vs</div>
+                    <div className='opacity-90 text-sm px-2 py-1 rounded-md bg-neutral-900 border border-white/10'>{m.result}</div>
                     <div className='flex items-center gap-2'>
                       <img src={getLogo(t2)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-8 object-contain' />
                       <div className='text-sm'>{t2?.name || `Команда ${m.team2_id}`}</div>

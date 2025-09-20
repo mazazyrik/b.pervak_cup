@@ -10,7 +10,7 @@ export function CreatePost() {
 
   const ensureUser = async (): Promise<number> => {
     if (useAuth.getState().userId) return useAuth.getState().userId as number
-    const effectiveTgId = telegramId || (import.meta.env as any).VITE_DEV_TG_ID || '123'
+    const effectiveTgId = telegramId
     try {
       const list = await api.get('/users')
       const found = Array.isArray(list.data)
@@ -39,7 +39,7 @@ export function CreatePost() {
       f.append('file', new File([blob], 'photo.jpg', { type: 'image/jpeg' }))
       const r = await api.post('/posts', f, { headers: { 'Content-Type': 'multipart/form-data' } })
       const publicUrl: string = r.data?.photo_url
-      const username = `user_${(useAuth.getState().telegramId || (import.meta.env as any).VITE_DEV_TG_ID || '123')}`
+      const username = `user_${(useAuth.getState().telegramId)}`
       router.navigate({ to: '/success', search: { photo_url: publicUrl, username } })
     } catch (e) {
       if (import.meta.env.DEV) console.warn('save_failed', e)

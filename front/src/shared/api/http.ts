@@ -15,8 +15,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const state = useAuth.getState()
-  const devId = (import.meta.env as any).VITE_DEV_TG_ID || '123'
-  const token = state.telegramId || (import.meta.env.DEV ? devId : null)
+  const token = state.telegramId || null
   if (token) {
     config.headers = config.headers || {}
     ;(config.headers as any)['Authorization'] = `Bearer ${token}`
@@ -43,8 +42,7 @@ api.interceptors.response.use(
         isLoggingIn = true
         try {
           const state = useAuth.getState()
-          const devId = (import.meta.env as any).VITE_DEV_TG_ID || '123'
-          const token = state.telegramId || (import.meta.env.DEV ? devId : null)
+            const token = state.telegramId || null
           if (token) await api.post('/auth/login', { telegram_id: token })
         } catch {}
         isLoggingIn = false
