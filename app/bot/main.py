@@ -10,6 +10,7 @@ from aiogram.types import (
     CallbackQuery,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
+    WebAppInfo,
 )
 from aiogram.dispatcher.middlewares.base import BaseMiddleware
 
@@ -422,7 +423,7 @@ async def choose_team(cb: CallbackQuery, api: ApiClient) -> None:
         inline_keyboard=[
             [InlineKeyboardButton(
                 text='🚀 Запустить приложение',
-                url=MINI_APP_URL,
+                web_app=WebAppInfo(url=MINI_APP_URL),
             )],
             [InlineKeyboardButton(text='✨ Титры', callback_data='credits')],
         ],
