@@ -360,6 +360,24 @@ async def cmd_start(message: Message, api: ApiClient) -> None:
     tg_id = str(message.from_user.id)
     token = tg_id
     try:
+        users = await api.list_users(token)
+    except Exception:
+        await message.answer('Не удалось загрузить данные, попробуй позже')
+        return
+    me = next((u for u in users if str(u.get('telegram_id')) == tg_id), None)
+    if me and me.get('fav_team_id'):
+        launch_kb = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(
+                    text='🚀 Запустить приложение',
+                    web_app=WebAppInfo(url=MINI_APP_URL),
+                )],
+                [InlineKeyboardButton(text='✨ Титры', callback_data='credits')],
+            ],
+        )
+        await message.answer('Готово, можно запускать приложение', reply_markup=launch_kb)
+        return
+    try:
         teams = await api.list_teams(token)
     except Exception:
         await message.answer('Не удалось загрузить команды, попробуй позже')

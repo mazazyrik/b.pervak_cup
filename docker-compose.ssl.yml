@@ -19,7 +19,7 @@ services:
       dockerfile: app/bot/Dockerfile
     container_name: bpc-bot
     environment:
-      - API_BASE_URL=http://backend:8000
+      - API_BASE_URL=http://backend:8000/api
       - BOT_TOKEN=${BOT_TOKEN}
       - MINI_APP_URL=https://${DOMAIN}
       - RANEPASPORT_CHANNEL=${RANEPASPORT_CHANNEL:-@ranepasport}
