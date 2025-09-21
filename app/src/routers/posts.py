@@ -49,8 +49,7 @@ async def create_post(
     save_path = media_root / name
     content = await file.read()
     save_path.write_bytes(content)
-    base = str(request.base_url).rstrip('/')
-    public_url = f'{base}/media/{name}'
+    public_url = f'/media/{name}'
     post = await Post.create(
         user_id=user.id,
         photo_url=public_url,
