@@ -436,10 +436,9 @@ async def credits(cb: CallbackQuery) -> None:
     await cb.answer()
     text = (
         '✨ Бот разработан Никитой Чуваевым из б.студио\n'
-        '🧪 б.студио: t.me/balbescrew\n'
-        '👨‍💻 Сольный проект Никиты: @bdevbync\n'
-        '🏫 ССК ЭМИТ: @ssk_emit\n'
-        '🏆 ССК Сенатор РАНХиГС: https://t.me/ranepasport'
+        '🧪 б.студио\n'
+        '👨‍💻 Сольный проект Никиты: b.dev by никита чуваев\n'
+        '🏆 ССК Сенатор РАНХиГС'
     )
     kb = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -448,12 +447,8 @@ async def credits(cb: CallbackQuery) -> None:
                 url='https://t.me/balbescrew',
             )],
             [InlineKeyboardButton(
-                text='@bdevbync',
+                text='б.dev',
                 url='https://t.me/bdevbync',
-            )],
-            [InlineKeyboardButton(
-                text='@ssk_emit',
-                url='https://t.me/ssk_emit',
             )],
             [InlineKeyboardButton(
                 text='ССК Сенатор РАНХиГС',
