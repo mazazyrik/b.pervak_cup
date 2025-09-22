@@ -11,6 +11,7 @@ from app.src.routers.teams import router as teams_router
 from app.src.routers.matches import router as matches_router
 from app.src.routers.bets import router as bets_router
 from app.src.routers.posts import router as posts_router
+from app.src.producer import start_kafka_producer, stop_kafka_producer
 
 
 app = FastAPI(
@@ -49,6 +50,16 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True,
 )
+
+
+@app.on_event('startup')
+async def _on_startup():
+    await start_kafka_producer()
+
+
+@app.on_event('shutdown')
+async def _on_shutdown():
+    await stop_kafka_producer()
 
 
 @app.get('/health')
