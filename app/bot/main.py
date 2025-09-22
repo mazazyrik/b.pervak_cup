@@ -3,6 +3,7 @@ import os
 import logging
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 import httpx
+import json
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.filters import Command
 from aiogram.types import (
@@ -13,6 +14,10 @@ from aiogram.types import (
     WebAppInfo,
 )
 from aiogram.dispatcher.middlewares.base import BaseMiddleware
+from client import KafkaClient
+from config import KAFKA_BOOTSTRAP_SERVERS
+
+kafka_client = KafkaClient(bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -561,6 +566,12 @@ async def cmd_list(message: Message, api: ApiClient) -> None:
         await message.answer('Нет пользователей')
         return
     await message.answer('\n'.join(sorted(set(usernames))))
+
+
+async def push(topic: str, bot: Bot) -> None:
+    async for message in kafka_client.consume(topic):
+        package = json.loads(message)
+        await bot.send_message(package['tg_id'], package['res'])
 
 
 async def main() -> None:

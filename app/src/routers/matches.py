@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.src.crud import Match, Team, Bet, User
 from app.src.schemas.match import MatchCreate, MatchUpdate, MatchOut
 from app.src.routers.auth import require_auth
+from app.src.producer import send_message_to_kafka
 
 
 router = APIRouter(prefix='/matches', tags=['matches'])
@@ -103,7 +104,16 @@ async def update_match(
         bets = await Bet.filter(match_id=match_id)
         for bet in bets:
             if new_result is not None and bet.result == new_result:
-                pass  # TODO: кидаем пуш в бота
+                res = (
+                    f'{bet.user.name} угадал результат матча '
+                    f'{match.team1.name} {new_result} {match.team2.name}'
+                )
+                package = {
+                    'tg_id': bet.user.telegram_id,
+                    'res': res,
+                }
+                await send_message_to_kafka(package, 'push')
+            # добавить систему подсчета очков по командам + матчи
 
     if update_data:
         await Match.filter(id=match_id).update(**update_data)

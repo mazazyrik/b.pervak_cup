@@ -12,7 +12,6 @@ export function Home() {
         <Link to='/camera' className='h-14 rounded-2xl bg-white text-black font-medium flex items-center justify-center'>Сфоткать</Link>
         <Link to='/feed' className='h-14 rounded-2xl bg-neutral-900 font-medium flex items-center justify-center'>Лента</Link>
         <Link to='/guess' className='h-14 rounded-2xl bg-neutral-900 font-medium flex items-center justify-center'>Угадай исход</Link>
-        <a href='https://t.me/balbescrew' target='_blank' rel='noreferrer' className='h-14 rounded-2xl bg-neutral-800 font-medium flex items-center justify-center'>СЕКРЕТО КАНАЛО</a>
       </div>
     </div>
   )

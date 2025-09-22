@@ -9,9 +9,7 @@ services:
       - TZ=UTC
       - DATABASE_URL=postgres://user:password@db:5432/mydatabase
     volumes:
-      # - ./database.db:/app/database.db  # SQLite volume removed
       - ./media:/app/media
-      #- ./app/src/migrations:/app/src/migrations
     expose:
       - '8000'
     depends_on:
@@ -29,6 +27,27 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     ports:
       - '5432:5432'
+    
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    image: confluentinc/cp-kafka:latest 
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
 
   bot:
     build:
