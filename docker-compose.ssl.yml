@@ -7,11 +7,28 @@ services:
     container_name: bpc-backend
     environment:
       - TZ=UTC
+      - DATABASE_URL=postgres://user:password@db:5432/mydatabase
     volumes:
-      - ./database.db:/app/database.db
+      # - ./database.db:/app/database.db  # SQLite volume removed
       - ./media:/app/media
+      - ./app/src/migrations:/app/src/migrations
     expose:
       - '8000'
+    depends_on:
+      - db
+    command: bash -c "aerich upgrade && uvicorn app.src.main:app --host 0.0.0.0 --port 8000"
+
+  db:
+    image: postgres:15-alpine
+    container_name: bpc-postgres-db
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - '5432:5432'
 
   bot:
     build:
@@ -54,4 +71,6 @@ services:
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
-volumes: {}
+volumes:
+  postgres_data:
+  aerich_migrations:
