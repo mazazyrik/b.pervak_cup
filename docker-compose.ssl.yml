@@ -54,7 +54,10 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: '0'
-      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_LOG_DIRS: '/var/lib/kafka/data'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
 
   bot:
     build:
@@ -100,3 +103,4 @@ services:
 volumes:
   postgres_data:
   # aerich_migrations:
+  kafka_data:
