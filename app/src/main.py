@@ -1,4 +1,3 @@
--- Active: 1758548141896@@77.110.112.125@5432
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
