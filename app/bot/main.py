@@ -28,6 +28,16 @@ RANEPASPORT_CHANNEL = os.getenv('RANEPASPORT_CHANNEL', '@ranepasport')
 BALBESCREW_CHANNEL = os.getenv('BALBESCREW_CHANNEL', '@balbescrew')
 BDEV_CHANNEL = os.getenv('BDEV_CHANNEL', '@bdevbync')
 
+# User Agreement Constants
+USER_AGREEMENT_TEXT = """Пользовательское соглашение
+Используя бота Кубок Первокурсников, вы соглашаетесь, что мы собираем ваш Telegram ID и имя профиля.
+По вашему желанию вы можете загружать фото/материалы — они могут быть опубликованы в ленте и использованы для освещения Кубка.
+Данные хранятся на сервере и не передаются третьим лицам, кроме случаев, предусмотренных законом.
+Вы можете прекратить использование бота и запросить удаление данных в любой момент. Контакт администратора @mazazyrikbeats
+"""
+AGREE_CALLBACK_DATA = 'user_agreement_agree'
+DISAGREE_CALLBACK_DATA = 'user_agreement_disagree'
+
 
 def _normalize_channel(value: str) -> str:
     v = (value or '').strip()
@@ -355,6 +365,55 @@ async def cb_check_subs(cb: CallbackQuery) -> None:
         )
 
 
+@router.callback_query(F.data == DISAGREE_CALLBACK_DATA)
+async def cb_disagree_agreement(cb: CallbackQuery) -> None:
+    await cb.answer()
+    await cb.message.edit_text(
+        'Для перезапуска бота напишите /start. Чтобы использовать бота, необходимо принять пользовательское соглашение.'
+    )
+
+
+@router.callback_query(F.data == AGREE_CALLBACK_DATA)
+async def cb_agree_agreement(cb: CallbackQuery, api: ApiClient) -> None:
+    await cb.answer()
+    tg_id = str(cb.from_user.id)
+    token = tg_id
+    try:
+        users = await api.list_users(token)
+        me = next((u for u in users if str(
+            u.get('telegram_id')) == tg_id), None)
+        if not me:
+            username = cb.from_user.username or ''
+            full_name = (
+                (cb.from_user.full_name or '').strip()
+                or username
+                or tg_id
+            )
+            me = await api.create_user(
+                token,
+                {
+                    'username': username,
+                    'telegram_id': tg_id,
+                    'name': full_name,
+                    'fav_team_id': None,
+                },
+            )
+        launch_kb = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(
+                    text='🚀 Запустить приложение',
+                    web_app=WebAppInfo(url=MINI_APP_URL),
+                )],
+                [InlineKeyboardButton(
+                    text='✨ Титры', callback_data='credits')],
+            ],
+        )
+        await cb.message.edit_text('Вы согласились с пользовательским соглашением. Готово, можно запускать приложение', reply_markup=launch_kb)
+
+    except Exception:
+        await cb.message.edit_text('Не удалось обработать согласие, попробуй позже')
+
+
 @router.message(Command('start'))
 async def cmd_start(message: Message, api: ApiClient) -> None:
     tg_id = str(message.from_user.id)
@@ -372,7 +431,8 @@ async def cmd_start(message: Message, api: ApiClient) -> None:
                     text='🚀 Запустить приложение',
                     web_app=WebAppInfo(url=MINI_APP_URL),
                 )],
-                [InlineKeyboardButton(text='✨ Титры', callback_data='credits')],
+                [InlineKeyboardButton(
+                    text='✨ Титры', callback_data='credits')],
             ],
         )
         await message.answer('Готово, можно запускать приложение', reply_markup=launch_kb)
@@ -437,16 +497,20 @@ async def choose_team(cb: CallbackQuery, api: ApiClient) -> None:
     except Exception:
         await cb.message.answer('Не удалось сохранить выбор, попробуй позже')
         return
-    launch_kb = InlineKeyboardMarkup(
+
+    agreement_kb = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(
-                text='🚀 Запустить приложение',
-                web_app=WebAppInfo(url=MINI_APP_URL),
+                text='✅ Согласен(сна)',
+                callback_data=AGREE_CALLBACK_DATA,
             )],
-            [InlineKeyboardButton(text='✨ Титры', callback_data='credits')],
+            [InlineKeyboardButton(
+                text='❌ Не согласен(сна)',
+                callback_data=DISAGREE_CALLBACK_DATA,
+            )],
         ],
     )
-    await cb.message.answer('Регистрация завершена', reply_markup=launch_kb)
+    await cb.message.edit_text(USER_AGREEMENT_TEXT, reply_markup=agreement_kb)
 
 
 @router.callback_query(F.data == 'credits')
