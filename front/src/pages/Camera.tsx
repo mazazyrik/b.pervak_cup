@@ -23,7 +23,7 @@ export function Camera() {
       <div className='flex-1' />
       <img src='/photo.png' alt='' className='w-full max-w-sm rounded-xl' />
       <div className='text-center text-sm italic opacity-80 text-white max-w-sm'>
-        Запечатли свои лучшие моменты с Кубка Первокурснника и они появтся в ленте!
+        Запечатли свои лучшие моменты с Кубка Первокурсника, и они появятся в ленте!
       </div>
       <div className='flex-1' />
       <div className='w-full max-w-sm'>
