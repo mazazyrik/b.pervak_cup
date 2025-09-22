@@ -9,7 +9,7 @@ RUN apt-get update
 
 COPY pyproject.toml ./
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir aiogram fastapi[all] tortoise-orm aiosqlite httpx uvicorn
+    pip install --no-cache-dir aiogram fastapi[all] tortoise-orm aiosqlite httpx uvicorn asyncpg
 
 COPY app ./app
 RUN mkdir -p /app/media
