@@ -23,6 +23,7 @@ async def start_kafka_producer():
     logger.debug("Kafka producer started")
 
 
+async def stop_kafka_producer():
     global producer
     if producer is not None:
         await producer.stop()
@@ -30,6 +31,7 @@ async def start_kafka_producer():
 
 
 async def send_message_to_kafka(message_dict: dict, topic: str):
+    global producer
     if producer is None:
         raise RuntimeError("Kafka producer is not started")
     value = json.dumps(message_dict).encode("utf-8")
