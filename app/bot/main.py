@@ -17,8 +17,6 @@ from aiogram.dispatcher.middlewares.base import BaseMiddleware
 from client import KafkaClient
 from config import KAFKA_BOOTSTRAP_SERVERS
 
-kafka_client = KafkaClient(bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS)
-
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -580,6 +578,7 @@ async def main() -> None:
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
     api = ApiClient(API_BASE_URL)
+    kafka_client = KafkaClient(KAFKA_BOOTSTRAP_SERVERS)
     dp.message.middleware(StartCaptureMiddleware(api))
     dp.message.middleware(RanepasportSubscriptionMiddleware(bot))
     dp.message.middleware(BalbescrewSubscriptionMiddleware(bot))
@@ -600,6 +599,7 @@ async def main() -> None:
         )
     finally:
         await api.close()
+        await kafka_client.close()
 
 
 if __name__ == '__main__':
