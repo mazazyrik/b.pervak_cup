@@ -5,14 +5,19 @@ import { api } from '@shared/api/http'
 
 export function AuthBootstrap() {
   const { telegramId } = useAuth()
+  const { setShowAuthOverlay } = useAuth()
+
   useEffect(() => {
     const { telegramId: id } = initTelegram()
-    if (!id) return
+    if (!id) {
+      setShowAuthOverlay(true)
+      return
+    }
     const s = useAuth.getState()
     if (s.telegramId !== id) useAuth.setState({ ...s, telegramId: id })
     const ensure = async () => {
-      await api.post('/auth/login', { telegram_id: id }).catch(() => {})
       try {
+        await api.post('/auth/login', { telegram_id: id })
         const users = await api.get('/users')
         const found = Array.isArray(users.data) ? users.data.find((u: any) => u.telegram_id === id) : null
         if (found) {
@@ -24,9 +29,12 @@ export function AuthBootstrap() {
         const name = [tg?.first_name, tg?.last_name].filter(Boolean).join(' ') || username
         const created = await api.post('/users', { username, telegram_id: id, name })
         useAuth.setState({ ...useAuth.getState(), userId: created.data.id })
-      } catch {}
+      } catch (e) {
+        console.error(e)
+        setShowAuthOverlay(true)
+      }
     }
     ensure()
-  }, [telegramId])
+  }, [telegramId, setShowAuthOverlay])
   return null
 }

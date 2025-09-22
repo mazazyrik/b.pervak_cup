@@ -32,6 +32,8 @@ api.interceptors.response.use(
     const status = error?.response?.status
     const isNetwork = !error.response
     const retries = (cfg as any)._retries || 0
+    const { telegramId, setShowAuthOverlay } = useAuth.getState()
+
     if ((isNetwork || status >= 500) && retries < 3) {
       ;(cfg as any)._retries = retries + 1
       await new Promise((res) => setTimeout(res, 300 * Math.pow(2, retries)))
@@ -41,16 +43,24 @@ api.interceptors.response.use(
       if (!isLoggingIn) {
         isLoggingIn = true
         try {
-          const state = useAuth.getState()
-            const token = state.telegramId || null
-          if (token) await api.post('/auth/login', { telegram_id: token })
-        } catch {}
+          if (telegramId) await api.post('/auth/login', { telegram_id: telegramId })
+          else throw new Error('Telegram ID is missing')
+        } catch (e) {
+          console.error(e)
+          setShowAuthOverlay(true)
+          isLoggingIn = false
+          return Promise.reject(error)
+        }
         isLoggingIn = false
       }
       cfg._retriedAuth = true
       return api(cfg)
     }
     if (import.meta.env.DEV) console.warn('api_error', error)
+    if (status === 404) {
+      setShowAuthOverlay(true)
+      return Promise.reject(error)
+    }
     toast.error('Ошибка запроса')
     return Promise.reject(error)
   }
