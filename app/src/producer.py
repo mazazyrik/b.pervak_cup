@@ -23,7 +23,6 @@ async def start_kafka_producer():
     logger.debug("Kafka producer started")
 
 
-async def stop_kafka_producer():
     global producer
     if producer is not None:
         await producer.stop()
