@@ -11,12 +11,12 @@ services:
     volumes:
       # - ./database.db:/app/database.db  # SQLite volume removed
       - ./media:/app/media
-      - ./app/src/migrations:/app/src/migrations
+      #- ./app/src/migrations:/app/src/migrations
     expose:
       - '8000'
     depends_on:
       - db
-    command: bash -c "aerich upgrade && uvicorn app.src.main:app --host 0.0.0.0 --port 8000"
+    command: uvicorn app.src.main:app --host 0.0.0.0 --port 8000
 
   db:
     image: postgres:15-alpine
@@ -73,4 +73,4 @@ services:
 
 volumes:
   postgres_data:
-  aerich_migrations:
+  # aerich_migrations:
