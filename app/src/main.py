@@ -38,7 +38,7 @@ app.mount('/media', StaticFiles(directory=str(_MEDIA_ROOT)), name='media')
 
 register_tortoise(
     app,
-    db_url=os.environ.get('DATABASE_URL', 'sqlite://database.db'),
+    db_url='postgres://user:password@db:5432/mydatabase',
     modules={'models': ['app.src.crud']},
     generate_schemas=True,
     add_exception_handlers=True,
