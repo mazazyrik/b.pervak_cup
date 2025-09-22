@@ -3,7 +3,7 @@ from logging import getLogger
 
 from aiokafka import AIOKafkaProducer
 
-from config import KAFKA_BROKER
+from app.src.config import KAFKA_BOOTSTRAP_SERVERS
 
 logger = getLogger(__name__)
 logger.setLevel("DEBUG")
@@ -18,7 +18,7 @@ async def start_kafka_producer():
             "Kafka producer already started, stopping it before starting again"
         )
         await producer.stop()
-    producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BROKER)
+    producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS)
     await producer.start()
     logger.debug("Kafka producer started")
 
