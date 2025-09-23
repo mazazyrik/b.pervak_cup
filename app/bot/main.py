@@ -25,7 +25,7 @@ logging.basicConfig(
 
 API_BASE_URL = os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')
 BOT_TOKEN = os.getenv(
-    'BOT_TOKEN', '7988942895:AAGPt2AiY2jED_YiuOCWZz2QxMgyvaJuMZw')
+    'BOT_TOKEN', '')
 MINI_APP_URL = 'https://b-pervak.3utilities.com/'
 RANEPASPORT_CHANNEL = os.getenv('RANEPASPORT_CHANNEL', '@ranepasport')
 BALBESCREW_CHANNEL = os.getenv('BALBESCREW_CHANNEL', '@balbescrew')
