@@ -582,9 +582,7 @@ async def main() -> None:
     api = ApiClient(API_BASE_URL)
     kafka_client = KafkaClient(KAFKA_BOOTSTRAP_SERVERS)
     dp.message.middleware(StartCaptureMiddleware(api))
-    dp.message.middleware(RanepasportSubscriptionMiddleware(bot))
     dp.message.middleware(BalbescrewSubscriptionMiddleware(bot))
-    dp.callback_query.middleware(RanepasportSubscriptionMiddleware(bot))
     dp.callback_query.middleware(BalbescrewSubscriptionMiddleware(bot))
     dp['api'] = api
     dp.include_router(router)
