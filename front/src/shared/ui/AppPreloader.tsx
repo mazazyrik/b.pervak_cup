@@ -18,6 +18,7 @@ function wait(ms: number) {
 
 export function AppPreloader() {
   const [ready, setReady] = useState(false)
+  const [fading, setFading] = useState(false)
   const qc = useQueryClient()
 
   useEffect(() => {
@@ -44,18 +45,19 @@ export function AppPreloader() {
         .catch(() => undefined)
 
       await Promise.all([assetsPreload, feedPreload, wait(4000)])
-      setReady(true)
+      setFading(true)
     }
     run()
   }, [qc])
 
-  const onFadeOut = () => {
-    const root = document.getElementById('root')
-    if (root) root.style.opacity = '1'
-  }
-  if (ready) return <div className='pointer-events-none fixed inset-0 z-[9999] bg-black opacity-0 transition-opacity duration-700' onTransitionEnd={onFadeOut} />
+  const onTransitionEnd = () => setReady(true)
+  if (ready) return null
   return (
-    <div className='fixed inset-0 z-[9999] bg-black opacity-100 transition-opacity duration-700' style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+    <div
+      className={'fixed inset-0 z-[9999] bg-black transition-opacity duration-700 ' + (fading ? 'opacity-0 pointer-events-none' : 'opacity-100')}
+      style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
+      onTransitionEnd={onTransitionEnd}
+    >
     </div>
   )
 }
