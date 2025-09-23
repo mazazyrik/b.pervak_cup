@@ -43,7 +43,7 @@ export function AppPreloader() {
         })
         .catch(() => undefined)
 
-      await Promise.all([assetsPreload, feedPreload, wait(1500)])
+      await Promise.all([assetsPreload, feedPreload, wait(4000)])
       setReady(true)
     }
     run()
@@ -51,12 +51,7 @@ export function AppPreloader() {
 
   if (ready) return null
   return (
-    <div className='fixed inset-0 z-[9999] flex items-center justify-center bg-black'>
-      <img
-        src='https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif'
-        alt=''
-        className='w-40 h-40 object-contain'
-      />
+    <div className='fixed inset-0 z-[9999] bg-black' style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
     </div>
   )
 }

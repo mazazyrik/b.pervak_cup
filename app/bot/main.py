@@ -637,6 +637,10 @@ async def main() -> None:
             bot,
             allowed_updates=dp.resolve_used_update_types(),
         )
+        await bot.send_message(
+            chat_id=387435447,
+            text='Бот запущен',
+        )
     finally:
         if consumer_task:
             consumer_task.cancel()
