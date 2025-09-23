@@ -352,9 +352,10 @@ async def cb_agree_agreement(cb: CallbackQuery, api: ApiClient) -> None:
         )
         try:
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            photo_path = os.path.join(base_dir, 'open.png')
+            photo_path = os.path.join(base_dir, 'bot_static', 'open.png')
             photo = FSInputFile(photo_path)
-            await cb.message.answer_photo(
+            await cb.message.bot.send_photo(
+                chat_id=cb.from_user.id,
                 photo=photo,
                 caption=(
                     'Вы согласились с пользовательским соглашением. '
@@ -398,9 +399,10 @@ async def cmd_start(message: Message, api: ApiClient) -> None:
         )
         try:
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            photo_path = os.path.join(base_dir, 'open.png')
+            photo_path = os.path.join(base_dir, 'bot_static', 'open.png')
             photo = FSInputFile(photo_path)
-            await message.answer_photo(
+            await message.bot.send_photo(
+                chat_id=message.from_user.id,
                 photo=photo,
                 caption='Готово, можно запускать приложение',
                 reply_markup=launch_kb,
@@ -514,9 +516,10 @@ async def credits(cb: CallbackQuery) -> None:
     )
     try:
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        photo_path = os.path.join(base_dir, 'titr.png')
+        photo_path = os.path.join(base_dir, 'bot_static', 'titr.png')
         photo = FSInputFile(photo_path)
-        await cb.message.answer_photo(
+        await cb.message.bot.send_photo(
+            chat_id=cb.from_user.id,
             photo=photo,
             caption=text,
             reply_markup=kb,
@@ -554,7 +557,7 @@ async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
             fin_message = 'Поздравляем!' + package['res']
             try:
                 base_dir = os.path.dirname(os.path.abspath(__file__))
-                photo_path = os.path.join(base_dir, 'score.png')
+                photo_path = os.path.join(base_dir, 'bot_static', 'score.png')
                 photo = FSInputFile(photo_path)
                 await bot.send_photo(
                     chat_id=package['tg_id'],

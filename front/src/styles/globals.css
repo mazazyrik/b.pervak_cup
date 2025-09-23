@@ -14,10 +14,7 @@ html, body, #root {
 body {
   margin: 0;
   background-color: var(--tg-bg);
-  background-image: url('/zalip%20b.gif');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-image: none;
   color: var(--tg-text);
 }
 
