@@ -21,7 +21,7 @@ export function Camera() {
     <div className='min-h-dvh px-4 py-6 flex flex-col items-center gap-4'>
       <img src='/logo_pages.png' alt='' className='h-8 object-contain fade-in' />
       <div className='flex-1' />
-      <img src='/photo.png' alt='' className='w-full max-w-sm rounded-xl slide-up' />
+      <img src='https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/photo.png' alt='' className='w-full max-w-sm rounded-xl slide-up' />
       <div className='text-center text-sm italic opacity-80 text-white max-w-sm slide-up' style={{ animationDelay: '80ms' }}>
         Запечатли свои лучшие моменты с Кубка Первокурсника, и они появятся в ленте!
       </div>
