@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.src.crud import Match, Team, Bet, User
 from app.src.schemas.match import MatchCreate, MatchUpdate, MatchOut
 from app.src.routers.auth import require_auth
-from app.src.producer import send_message_to_kafka
+from app.src.producer import logger, send_message_to_kafka
 
 
 router = APIRouter(prefix='/matches', tags=['matches'])
@@ -101,10 +101,12 @@ async def update_match(
 
     new_result = update_data.get('result') if 'result' in update_data else None
     if 'result' in update_data:
+        logger.info(f'Updating match {match_id} with result {new_result}')
         bets = await Bet.filter(match_id=match_id)
         team1 = await Team.get(id=match.team1_id)
         team2 = await Team.get(id=match.team2_id)
         for bet in bets:
+            logger.info(f'Checking bet {bet.id} for match {match_id}')
             if new_result is not None and bet.result == new_result:
                 user = await User.get(id=bet.user_id)
                 res = (
@@ -115,6 +117,7 @@ async def update_match(
                     'tg_id': user.telegram_id,
                     'res': res,
                 }
+                logger.info(f'Sending message to Kafka: {package}')
                 await send_message_to_kafka(package, 'push')
 
     if update_data:
