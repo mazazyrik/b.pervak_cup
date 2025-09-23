@@ -9,7 +9,7 @@ services:
       - TZ=UTC
       - DATABASE_URL=postgres://user:password@db:5432/mydatabase
     volumes:
-      - ./media:/app/media
+      - media_data:/app/media
     expose:
       - '8000'
     depends_on:
@@ -129,3 +129,4 @@ volumes:
   postgres_data:
   kafka_data:
   grafana_data:
+  media_data:
