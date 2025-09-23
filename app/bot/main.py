@@ -12,6 +12,7 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
     WebAppInfo,
+    FSInputFile,
 )
 from aiogram.dispatcher.middlewares.base import BaseMiddleware
 from client import KafkaClient
@@ -390,8 +391,7 @@ async def cb_check_subs(cb: CallbackQuery) -> None:
 async def cb_disagree_agreement(cb: CallbackQuery) -> None:
     await cb.answer()
     await cb.message.edit_text(
-        'Для перезапуска бота напишите /start. Чтобы использовать бота, '
-        'необходимо принять пользовательское соглашение.'
+        'Для перезапуска бота напишите /start. Чтобы использовать бота, необходимо принять пользовательское соглашение.'
     )
 
 
@@ -604,9 +604,10 @@ async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
 
 @router.message(F.text.lower() == 'административная ответственность')
 async def send_easter_egg(message: Message) -> None:
+    photo = FSInputFile(str(path_to_easter_egg))
     await message.bot.send_photo(
         chat_id=message.from_user.id,
-        photo=path_to_easter_egg,
+        photo=photo,
     )
 
 
