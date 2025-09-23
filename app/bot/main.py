@@ -170,87 +170,6 @@ class StartCaptureMiddleware(BaseMiddleware):
         return await handler(event, data)
 
 
-class RanepasportSubscriptionMiddleware(BaseMiddleware):
-    def __init__(self, bot: Bot) -> None:
-        super().__init__()
-        self.bot = bot
-
-    async def __call__(
-        self,
-        handler: Callable[
-            [Message | CallbackQuery, Dict[str, Any]],
-            Awaitable[Any],
-        ],
-        event: Message | CallbackQuery,
-        data: Dict[str, Any],
-    ) -> Any:
-        if isinstance(event, Message):
-            user_id = event.from_user.id
-            if event.text and event.text.strip().startswith('/list'):
-                return await handler(event, data)
-            ok_rane = await self._is_subscribed(
-                user_id,
-                BDEV_CHANNEL,
-            )
-            if not ok_rane:
-                await self._prompt_subscribe(event, prefer_edit=False)
-                return
-        if isinstance(event, CallbackQuery):
-            if event.data and event.data.startswith('check_subs'):
-                return await handler(event, data)
-            user_id = event.from_user.id
-            ok_rane = await self._is_subscribed(
-                user_id,
-                BDEV_CHANNEL,
-            )
-            if not ok_rane:
-                await self._prompt_subscribe(event.message, prefer_edit=True)
-                return
-        return await handler(event, data)
-
-    async def _is_subscribed(self, user_id: int, channel: str) -> bool:
-        try:
-            member = await self.bot.get_chat_member(
-                chat_id=_normalize_channel(channel),
-                user_id=user_id,
-            )
-            status = getattr(member, 'status', None)
-            return status in ('member', 'administrator', 'creator')
-        except Exception:
-            return False
-
-    async def _prompt_subscribe(
-        self,
-        message: Optional[Message],
-        prefer_edit: bool,
-    ) -> None:
-        if not message:
-            return
-        kb = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(
-                    text='Подписаться на @bdevbync',
-                    url=_channel_url(BDEV_CHANNEL),
-                )],
-                [InlineKeyboardButton(
-                    text='Проверить подписку',
-                    callback_data='check_subs',
-                )],
-            ],
-        )
-        text = (
-            'Чтобы пользоваться ботом, подпишись на каналы и '
-            'нажми Проверить подписку'
-        )
-        if prefer_edit:
-            try:
-                await message.edit_text(text, reply_markup=kb)
-                return
-            except Exception:
-                pass
-        await message.answer(text, reply_markup=kb)
-
-
 class BalbescrewSubscriptionMiddleware(BaseMiddleware):
     def __init__(self, bot: Bot) -> None:
         super().__init__()
@@ -391,7 +310,8 @@ async def cb_check_subs(cb: CallbackQuery) -> None:
 async def cb_disagree_agreement(cb: CallbackQuery) -> None:
     await cb.answer()
     await cb.message.edit_text(
-        'Для перезапуска бота напишите /start. Чтобы использовать бота, необходимо принять пользовательское соглашение.'
+        'Для перезапуска бота напишите /start. Чтобы использовать бота, '
+        'необходимо принять пользовательское соглашение.'
     )
 
 
@@ -430,11 +350,24 @@ async def cb_agree_agreement(cb: CallbackQuery, api: ApiClient) -> None:
                     text='✨ Титры', callback_data='credits')],
             ],
         )
-        await cb.message.edit_text(
-            'Вы согласились с пользовательским соглашением. Готово, можно '
-            'запускать приложение',
-            reply_markup=launch_kb,
-        )
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            photo_path = os.path.join(base_dir, 'open.png')
+            photo = FSInputFile(photo_path)
+            await cb.message.answer_photo(
+                photo=photo,
+                caption=(
+                    'Вы согласились с пользовательским соглашением. '
+                    'Готово, можно запускать приложение'
+                ),
+                reply_markup=launch_kb,
+            )
+        except Exception:
+            await cb.message.answer(
+                'Вы согласились с пользовательским соглашением. '
+                'Готово, можно запускать приложение',
+                reply_markup=launch_kb,
+            )
 
     except Exception:
         await cb.message.edit_text(
@@ -463,10 +396,20 @@ async def cmd_start(message: Message, api: ApiClient) -> None:
                     text='✨ Титры', callback_data='credits')],
             ],
         )
-        await message.answer(
-            'Готово, можно запускать приложение',
-            reply_markup=launch_kb,
-        )
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            photo_path = os.path.join(base_dir, 'open.png')
+            photo = FSInputFile(photo_path)
+            await message.answer_photo(
+                photo=photo,
+                caption='Готово, можно запускать приложение',
+                reply_markup=launch_kb,
+            )
+        except Exception:
+            await message.answer(
+                'Готово, можно запускать приложение',
+                reply_markup=launch_kb,
+            )
         return
     try:
         teams = await api.list_teams(token)
@@ -569,7 +512,17 @@ async def credits(cb: CallbackQuery) -> None:
             )],
         ],
     )
-    await cb.message.answer(text, reply_markup=kb)
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        photo_path = os.path.join(base_dir, 'titr.png')
+        photo = FSInputFile(photo_path)
+        await cb.message.answer_photo(
+            photo=photo,
+            caption=text,
+            reply_markup=kb,
+        )
+    except Exception:
+        await cb.message.answer(text, reply_markup=kb)
 
 
 @router.message(Command('list'))
@@ -599,7 +552,17 @@ async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
         if topic == 'push':
             package = json.loads(message)
             fin_message = 'Поздравляем!' + package['res']
-            await bot.send_message(package['tg_id'], fin_message)
+            try:
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                photo_path = os.path.join(base_dir, 'score.png')
+                photo = FSInputFile(photo_path)
+                await bot.send_photo(
+                    chat_id=package['tg_id'],
+                    photo=photo,
+                    caption=fin_message,
+                )
+            except Exception:
+                await bot.send_message(package['tg_id'], fin_message)
 
 
 @router.message(F.text.lower() == 'административная ответственность')

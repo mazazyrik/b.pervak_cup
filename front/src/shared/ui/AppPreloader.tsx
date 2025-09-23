@@ -23,6 +23,7 @@ export function AppPreloader() {
 
   useEffect(() => {
     const run = async () => {
+      await wait(1000)
       const assets = [
         '/zalip%20b.gif',
         '/logo_pages.png',
@@ -55,7 +56,7 @@ export function AppPreloader() {
   return (
     <div
       className={'fixed inset-0 z-[9999] bg-black transition-opacity duration-700 ' + (fading ? 'opacity-0 pointer-events-none' : 'opacity-100')}
-      style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
+      style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center calc(50% - 100px)', backgroundRepeat: 'no-repeat' }}
       onTransitionEnd={onTransitionEnd}
     >
     </div>
