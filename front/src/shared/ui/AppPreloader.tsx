@@ -49,9 +49,13 @@ export function AppPreloader() {
     run()
   }, [qc])
 
-  if (ready) return null
+  const onFadeOut = () => {
+    const root = document.getElementById('root')
+    if (root) root.style.opacity = '1'
+  }
+  if (ready) return <div className='pointer-events-none fixed inset-0 z-[9999] bg-black opacity-0 transition-opacity duration-700' onTransitionEnd={onFadeOut} />
   return (
-    <div className='fixed inset-0 z-[9999] bg-black' style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+    <div className='fixed inset-0 z-[9999] bg-black opacity-100 transition-opacity duration-700' style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
     </div>
   )
 }
