@@ -1,7 +1,7 @@
 import { useRouterState } from '@tanstack/react-router'
 export function BackButton({ inline = false }: { inline?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  if (!inline && (pathname === '/' || pathname === '/feed')) return null
+  if (!inline && (pathname === '/' || pathname === '/feed' || pathname.startsWith('/moderation'))) return null
   const onClick = () => {
     if (window.history.length > 1) window.history.back()
     else window.location.href = '/'
