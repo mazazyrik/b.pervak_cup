@@ -15,7 +15,7 @@ from aiogram.types import (
 )
 from aiogram.dispatcher.middlewares.base import BaseMiddleware
 from client import KafkaClient
-from config import KAFKA_BOOTSTRAP_SERVERS
+from config import KAFKA_BOOTSTRAP_SERVERS, USER_AGREEMENT_TEXT
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,19 +25,14 @@ logging.basicConfig(
 
 API_BASE_URL = os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')
 BOT_TOKEN = os.getenv(
-    'BOT_TOKEN', '')
+    'BOT_TOKEN', '7149556054:AAFPIKcoj97DvflYdaCVlFtbNRJb4QKb87I')
 MINI_APP_URL = 'https://b-pervak.3utilities.com/'
 RANEPASPORT_CHANNEL = os.getenv('RANEPASPORT_CHANNEL', '@ranepasport')
 BALBESCREW_CHANNEL = os.getenv('BALBESCREW_CHANNEL', '@balbescrew')
 BDEV_CHANNEL = os.getenv('BDEV_CHANNEL', '@bdevbync')
 
 # User Agreement Constants
-USER_AGREEMENT_TEXT = """Пользовательское соглашение
-Используя бота Кубок Первокурсников, вы соглашаетесь, что мы собираем ваш Telegram ID и имя профиля.
-По вашему желанию вы можете загружать фото/материалы — они могут быть опубликованы в ленте и использованы для освещения Кубка.
-Данные хранятся на сервере и не передаются третьим лицам, кроме случаев, предусмотренных законом.
-Вы можете прекратить использование бота и запросить удаление данных в любой момент. Контакт администратора @mazazyrikbeats
-"""
+
 AGREE_CALLBACK_DATA = 'user_agreement_agree'
 DISAGREE_CALLBACK_DATA = 'user_agreement_disagree'
 
