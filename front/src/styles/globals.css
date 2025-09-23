@@ -14,7 +14,12 @@ html, body, #root {
 body {
   margin: 0;
   background-color: var(--tg-bg);
-  background-image: none;
+  background-image: url('https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/zalip%20b.gif');
+  background-color: rgba(0, 0, 0, 0.8);
+  background-blend-mode: multiply;
+  background-size: cover;
+  background-position: center 0;
+  background-repeat: repeat-y;
   color: var(--tg-text);
 }
 
