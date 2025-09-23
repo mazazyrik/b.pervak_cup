@@ -11,11 +11,13 @@ import { Guess } from '@pages/Guess'
 import { PostSuccess } from '@pages/PostSuccess'
 import { Post } from '@pages/Post'
 import { Moderation } from '@pages/Moderation'
+import { AppPreloader } from '@shared/ui/AppPreloader'
 
 const Root = () => (
   <ThemeProvider>
     <QueryProvider>
       <AuthBootstrap />
+      <AppPreloader />
       <AppShell>
         <Outlet />
       </AppShell>
