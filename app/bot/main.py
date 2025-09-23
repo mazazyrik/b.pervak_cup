@@ -15,7 +15,7 @@ from aiogram.types import (
 )
 from aiogram.dispatcher.middlewares.base import BaseMiddleware
 from client import KafkaClient
-from config import KAFKA_BOOTSTRAP_SERVERS, USER_AGREEMENT_TEXT
+from config import KAFKA_BOOTSTRAP_SERVERS
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,14 +24,23 @@ logging.basicConfig(
 )
 
 API_BASE_URL = os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')
-BOT_TOKEN = '7149556054:AAFPIKcoj97DvflYdaCVlFtbNRJb4QKb87I'
+BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 MINI_APP_URL = 'https://b-pervak.3utilities.com/'
 RANEPASPORT_CHANNEL = os.getenv('RANEPASPORT_CHANNEL', '@ranepasport')
 BALBESCREW_CHANNEL = os.getenv('BALBESCREW_CHANNEL', '@balbescrew')
 BDEV_CHANNEL = os.getenv('BDEV_CHANNEL', '@bdevbync')
 
-# User Agreement Constants
-
+USER_AGREEMENT_TEXT = (
+    'Пользовательское соглашение\n'
+    'Используя бота Кубок Первокурсников, вы соглашаетесь, что мы '
+    'собираем ваш Telegram ID и имя профиля.\n'
+    'По вашему желанию вы можете загружать фото/материалы — они могут '
+    'быть опубликованы в ленте и использованы для освещения Кубка.\n'
+    'Данные хранятся на сервере и не передаются третьим лицам, кроме '
+    'случаев, предусмотренных законом.\n'
+    'Вы можете прекратить использование бота и запросить удаление данных '
+    'в любой момент. Контакт администратора @mazazyrikbeats\n'
+)
 AGREE_CALLBACK_DATA = 'user_agreement_agree'
 DISAGREE_CALLBACK_DATA = 'user_agreement_disagree'
 
@@ -54,7 +63,10 @@ def _channel_url(value: str) -> str:
 class ApiClient:
     def __init__(self, base_url: str) -> None:
         self.base_url = base_url.rstrip('/')
-        self._client = httpx.AsyncClient(base_url=self.base_url, timeout=15)
+        self._client = httpx.AsyncClient(
+            base_url=self.base_url,
+            timeout=15,
+        )
 
     async def close(self) -> None:
         await self._client.aclose()
@@ -206,7 +218,11 @@ class RanepasportSubscriptionMiddleware(BaseMiddleware):
         except Exception:
             return False
 
-    async def _prompt_subscribe(self, message: Optional[Message], prefer_edit: bool) -> None:
+    async def _prompt_subscribe(
+        self,
+        message: Optional[Message],
+        prefer_edit: bool,
+    ) -> None:
         if not message:
             return
         kb = InlineKeyboardMarkup(
@@ -283,7 +299,11 @@ class BalbescrewSubscriptionMiddleware(BaseMiddleware):
         except Exception:
             return False
 
-    async def _prompt_subscribe(self, message: Optional[Message], prefer_edit: bool) -> None:
+    async def _prompt_subscribe(
+        self,
+        message: Optional[Message],
+        prefer_edit: bool,
+    ) -> None:
         if not message:
             return
         kb = InlineKeyboardMarkup(
@@ -333,15 +353,19 @@ async def cb_check_subs(cb: CallbackQuery) -> None:
 
     if ok_r and ok_b:
         try:
-            await cb.message.edit_text('Подписки подтверждены, отправь /start')
+            await cb.message.edit_text(
+                'Подписки подтверждены, отправь /start'
+            )
         except Exception:
-            await cb.message.answer('Подписки подтверждены, отправь /start')
+            await cb.message.answer(
+                'Подписки подтверждены, отправь /start'
+            )
         return
 
     kb = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(
-                text='Подписаться на @bdevbync',
+                text='Подписаться на @бdevbync',
                 url=_channel_url(BDEV_CHANNEL),
             )],
             [InlineKeyboardButton(
@@ -366,7 +390,8 @@ async def cb_check_subs(cb: CallbackQuery) -> None:
 async def cb_disagree_agreement(cb: CallbackQuery) -> None:
     await cb.answer()
     await cb.message.edit_text(
-        'Для перезапуска бота напишите /start. Чтобы использовать бота, необходимо принять пользовательское соглашение.'
+        'Для перезапуска бота напишите /start. Чтобы использовать бота, '
+        'необходимо принять пользовательское соглашение.'
     )
 
 
@@ -405,10 +430,16 @@ async def cb_agree_agreement(cb: CallbackQuery, api: ApiClient) -> None:
                     text='✨ Титры', callback_data='credits')],
             ],
         )
-        await cb.message.edit_text('Вы согласились с пользовательским соглашением. Готово, можно запускать приложение', reply_markup=launch_kb)
+        await cb.message.edit_text(
+            'Вы согласились с пользовательским соглашением. Готово, можно '
+            'запускать приложение',
+            reply_markup=launch_kb,
+        )
 
     except Exception:
-        await cb.message.edit_text('Не удалось обработать согласие, попробуй позже')
+        await cb.message.edit_text(
+            'Не удалось обработать согласие, попробуй позже'
+        )
 
 
 @router.message(Command('start'))
@@ -432,7 +463,10 @@ async def cmd_start(message: Message, api: ApiClient) -> None:
                     text='✨ Титры', callback_data='credits')],
             ],
         )
-        await message.answer('Готово, можно запускать приложение', reply_markup=launch_kb)
+        await message.answer(
+            'Готово, можно запускать приложение',
+            reply_markup=launch_kb,
+        )
         return
     try:
         teams = await api.list_teams(token)
@@ -560,10 +594,12 @@ async def cmd_list(message: Message, api: ApiClient) -> None:
     await message.answer('\n'.join(sorted(set(usernames))))
 
 
-async def push(topic: str, bot: Bot) -> None:
-    async for message in kafka_client.consume(topic):
-        package = json.loads(message)
-        await bot.send_message(package['tg_id'], package['res'])
+async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
+    async for message in client.consume(topic):
+        if topic == 'push':
+            print(message)
+            package = json.loads(message)
+            await bot.send_message(package['tg_id'], package['res'])
 
 
 async def main() -> None:
@@ -586,12 +622,19 @@ async def main() -> None:
         return await handler(event, data)
     dp.message.outer_middleware.register(api_injector)
     dp.callback_query.outer_middleware.register(api_injector)
+    consumer_task = asyncio.create_task(push('push', bot, kafka_client))
     try:
         await dp.start_polling(
             bot,
             allowed_updates=dp.resolve_used_update_types(),
         )
     finally:
+        if consumer_task:
+            consumer_task.cancel()
+            try:
+                await asyncio.gather(consumer_task)
+            except Exception:
+                pass
         await api.close()
         await kafka_client.close()
 
