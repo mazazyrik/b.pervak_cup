@@ -15,7 +15,7 @@ from aiogram.types import (
 )
 from aiogram.dispatcher.middlewares.base import BaseMiddleware
 from client import KafkaClient
-from config import KAFKA_BOOTSTRAP_SERVERS
+from config import KAFKA_BOOTSTRAP_SERVERS, path_to_easter_egg
 
 logging.basicConfig(
     level=logging.INFO,
@@ -597,9 +597,17 @@ async def cmd_list(message: Message, api: ApiClient) -> None:
 async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
     async for message in client.consume(topic):
         if topic == 'push':
-            print(message)
             package = json.loads(message)
-            await bot.send_message(package['tg_id'], package['res'])
+            fin_message = 'Поздравляем!' + package['res']
+            await bot.send_message(package['tg_id'], fin_message)
+
+
+@router.message(F.text.lower() == 'административная ответственность')
+async def send_easter_egg(bot: Bot, message: Message) -> None:
+    await bot.send_photo(
+        chat_id=message.from_user.id,
+        photo=path_to_easter_egg,
+    )
 
 
 async def main() -> None:
