@@ -56,7 +56,7 @@ export function AppPreloader() {
   return (
     <div
       className={'fixed inset-0 z-[9999] bg-black transition-opacity duration-700 ' + (fading ? 'opacity-0 pointer-events-none' : 'opacity-100')}
-      style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center calc(50% - 100px)', backgroundRepeat: 'no-repeat' }}
+      style={{ backgroundImage: 'url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/loading.gif)', backgroundSize: 'cover', backgroundPosition: 'center calc(50% - 80px)', backgroundRepeat: 'no-repeat' }}
       onTransitionEnd={onTransitionEnd}
     >
     </div>
