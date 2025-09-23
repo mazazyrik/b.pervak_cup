@@ -603,8 +603,8 @@ async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
 
 
 @router.message(F.text.lower() == 'административная ответственность')
-async def send_easter_egg(bot: Bot, message: Message) -> None:
-    await bot.send_photo(
+async def send_easter_egg(message: Message) -> None:
+    await message.bot.send_photo(
         chat_id=message.from_user.id,
         photo=path_to_easter_egg,
     )
