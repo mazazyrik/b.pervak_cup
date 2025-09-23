@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { router } from '@app/router'
 import { toast } from 'sonner'
 
 type Props = {
@@ -14,6 +15,7 @@ export function CameraCapture({ onCapture }: Props) {
     try {
       const url = URL.createObjectURL(f)
       onCapture(f, url)
+      router.navigate({ to: '/success', search: { photo_url: url, username: 'user' } })
     } catch {
       toast.error('Не удалось обработать файл')
     }
