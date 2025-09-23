@@ -56,6 +56,9 @@ class Bet(Model):
                 raise ValueError('invalid_result')
         await super().save(*args, **kwargs)
 
+    class Meta:
+        unique_together = (('user', 'match'),)
+
 
 class Post(Model):
     id = fields.IntField(pk=True)

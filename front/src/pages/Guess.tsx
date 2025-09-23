@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@shared/api/http'
 import { useAuth } from '@entities/user/model/useAuth'
 import { toast } from 'sonner'
@@ -23,6 +23,7 @@ function isValidScore(v: string) {
 export function Guess() {
   const { telegramId } = useAuth()
   const effectiveTgId = telegramId
+  const qc = useQueryClient()
   const teamsQ = useQuery({
     queryKey: ['teams'],
     queryFn: async () => (await api.get<Team[]>('/teams')).data
@@ -44,7 +45,9 @@ export function Guess() {
       const r = await api.get<Bet[]>('/bets')
       return r.data.filter((b) => b.user_id === uid)
     },
-    enabled: !!effectiveTgId
+    enabled: !!effectiveTgId,
+    refetchOnWindowFocus: true,
+    refetchInterval: 15000
   })
 
   const [scores, setScores] = useState<Record<number, string>>({})
@@ -108,10 +111,12 @@ export function Guess() {
     try {
       setPending((p) => ({ ...p, [m.id]: true }))
       const uid = useAuth.getState().userId || (await ensureUser())
-      await api.post('/bets', { user_id: uid, match_id: m.id, result: val })
-      toast.success('Ставка принята')
+      const res = await api.post<Bet>('/bets', { user_id: uid, match_id: m.id, result: val })
+      setScores((s) => ({ ...s, [m.id]: res.data.result }))
       setLocked((l) => ({ ...l, [m.id]: true }))
-    } catch (e) {
+      qc.invalidateQueries({ queryKey: ['bets', 'byUser', effectiveTgId] })
+      toast.success('Ставка принята')
+    } catch (e: any) {
       toast.error('Не удалось отправить ставку')
     } finally {
       setPending((p) => ({ ...p, [m.id]: false }))
@@ -137,10 +142,10 @@ export function Guess() {
     const ok = isValidScore(v)
     const isLocked = !!locked[m.id]
     return (
-      <div key={m.id} className='rounded-2xl p-3 bg-black/40 border border-white/10 mb-3'>
+      <div key={m.id} className='rounded-2xl p-3 bg-black/40 border border-white/10 mb-3 card-appear'>
         <div className='flex items-center justify-between gap-3'>
           <div className='flex-1 flex flex-col items-center gap-1'>
-            <img src={getLogo(t1)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-10 object-contain' />
+            <img src={getLogo(t1)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-10 object-contain fade-in' />
             <div className='text-sm font-medium text-center'>{t1?.name || `Команда ${m.team1_id}`}</div>
           </div>
           <div className='flex items-center gap-2'>
@@ -149,12 +154,12 @@ export function Guess() {
             <input value={r || ''} onChange={(e) => onChangeRight(m, e.target.value)} inputMode='numeric' pattern='[0-9]*' disabled={isLocked} className='w-12 h-12 text-center text-lg rounded-lg bg-neutral-900 border border-white/10 disabled:opacity-60' />
           </div>
           <div className='flex-1 flex flex-col items-center gap-1'>
-            <img src={getLogo(t2)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-10 object-contain' />
+            <img src={getLogo(t2)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-10 object-contain fade-in' />
             <div className='text-sm font-medium text-center'>{t2?.name || `Команда ${m.team2_id}`}</div>
           </div>
         </div>
         <div className='mt-3 flex justify-center'>
-          <button disabled={isLocked || !ok || !!pending[m.id]} onClick={() => submit(m)} className={'px-4 py-2 rounded-full text-sm ' + (isLocked ? 'bg-neutral-800 text-neutral-400' : ok ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400')}>{isLocked ? 'Ставка принята' : pending[m.id] ? '...' : 'Поставить'}</button>
+          <button disabled={isLocked || !ok || !!pending[m.id]} onClick={() => submit(m)} className={'px-4 py-2 rounded-full text-sm button-pop ' + (isLocked ? 'bg-neutral-800 text-neutral-400' : ok ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400')}>{isLocked ? 'Ставка принята' : pending[m.id] ? '...' : 'Поставить'}</button>
         </div>
       </div>
     )
@@ -165,25 +170,25 @@ export function Guess() {
 
   return (
     <div className='min-h-dvh px-4 py-6 flex flex-col items-center gap-4'>
-      <img src='/logo_pages.png' alt='' className='h-8 object-contain' />
+      <img src='/logo_pages.png' alt='' className='h-8 object-contain fade-in' />
       <div className='w-full max-w-sm text-center'>
-        <div className='text-xl font-semibold mb-3'>Угадай исход</div>
+        <div className='text-xl font-semibold mb-3 slide-up'>Угадай исход</div>
         <div className='mb-4'>
-          <div className='text-sm mb-2 opacity-80'>Недавние матчи</div>
+          <div className='text-sm mb-2 opacity-80 slide-up'>Недавние матчи</div>
           <div className='flex gap-3 overflow-x-auto no-scrollbar pb-1'>
             {recent.map((m) => {
               const t1 = teamsMap[m.team1_id]
               const t2 = teamsMap[m.team2_id]
               return (
-                <div key={m.id} className='min-w-[260px] rounded-xl p-3 bg-black/40 border border-white/10'>
+                <div key={m.id} className='min-w-[260px] rounded-xl p-3 bg-black/40 border border-white/10 card-appear'>
                   <div className='flex items-center justify-between gap-3'>
                     <div className='flex items-center gap-2'>
-                      <img src={getLogo(t1)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-8 object-contain' />
+                      <img src={getLogo(t1)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-8 object-contain fade-in' />
                       <div className='text-sm'>{t1?.name || `Команда ${m.team1_id}`}</div>
                     </div>
                     <div className='opacity-90 text-sm px-2 py-1 rounded-md bg-neutral-900 border border-white/10'>{m.result}</div>
                     <div className='flex items-center gap-2'>
-                      <img src={getLogo(t2)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-8 object-contain' />
+                      <img src={getLogo(t2)} onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} alt='' className='h-8 object-contain fade-in' />
                       <div className='text-sm'>{t2?.name || `Команда ${m.team2_id}`}</div>
                     </div>
                   </div>
@@ -197,7 +202,7 @@ export function Guess() {
             )}
           </div>
         </div>
-        <div className='text-sm mb-2 opacity-80'>Матчи для ставки</div>
+        <div className='text-sm mb-2 opacity-80 slide-up'>Матчи для ставки</div>
         {matchesQ.isLoading || teamsQ.isLoading ? (
           <div className='space-y-3'>
             {Array.from({ length: 3 }).map((_, i) => (

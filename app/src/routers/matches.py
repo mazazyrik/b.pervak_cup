@@ -102,18 +102,20 @@ async def update_match(
     new_result = update_data.get('result') if 'result' in update_data else None
     if 'result' in update_data:
         bets = await Bet.filter(match_id=match_id)
+        team1 = await Team.get(id=match.team1_id)
+        team2 = await Team.get(id=match.team2_id)
         for bet in bets:
             if new_result is not None and bet.result == new_result:
+                user = await User.get(id=bet.user_id)
                 res = (
-                    f'{bet.user.name} угадал результат матча '
-                    f'{match.team1.name} {new_result} {match.team2.name}'
+                    f'{user.name} угадал результат матча '
+                    f'{team1.name} {new_result} {team2.name}'
                 )
                 package = {
-                    'tg_id': bet.user.telegram_id,
+                    'tg_id': user.telegram_id,
                     'res': res,
                 }
                 await send_message_to_kafka(package, 'push')
-            # добавить систему подсчета очков по командам + матчи
 
     if update_data:
         await Match.filter(id=match_id).update(**update_data)

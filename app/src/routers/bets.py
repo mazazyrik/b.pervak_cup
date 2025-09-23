@@ -21,6 +21,11 @@ async def create_bet(
     match = await Match.get_or_none(id=payload.match_id)
     if not user or not match:
         raise HTTPException(status_code=400, detail='invalid_relations')
+    existing = await Bet.get_or_none(user_id=user.id, match_id=match.id)
+    if existing:
+        await Bet.filter(id=existing.id).update(result=payload.result)
+        existing = await Bet.get(id=existing.id)
+        return BetOut.model_validate(existing)
     bet = await Bet.create(
         user_id=user.id,
         match_id=match.id,
