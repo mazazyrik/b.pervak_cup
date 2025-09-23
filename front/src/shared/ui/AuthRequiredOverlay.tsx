@@ -1,6 +1,7 @@
 import { FC } from 'react'
 
-export const AuthRequiredOverlay: FC = () => {
+export const AuthRequiredOverlay: FC<{ hidden?: boolean }> = ({ hidden }) => {
+  if (hidden) return null
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75'>
       <div className='bg-white p-8 rounded-lg shadow-lg text-center'>

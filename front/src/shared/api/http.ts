@@ -15,7 +15,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const state = useAuth.getState()
-  const token = state.telegramId || null
+  const token = state.manualToken || state.telegramId || null
   if (token) {
     config.headers = config.headers || {}
     ;(config.headers as any)['Authorization'] = `Bearer ${token}`
@@ -57,10 +57,7 @@ api.interceptors.response.use(
       return api(cfg)
     }
     if (import.meta.env.DEV) console.warn('api_error', error)
-    if (status === 404) {
-      setShowAuthOverlay(true)
-      return Promise.reject(error)
-    }
+    if (status === 404) return Promise.reject(error)
     toast.error('Ошибка запроса')
     return Promise.reject(error)
   }

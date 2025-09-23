@@ -14,9 +14,10 @@ html, body, #root {
 body {
   margin: 0;
   background-color: var(--tg-bg);
-  background-image: url('/fon.png');
+  background-image: url('/zalip%20b.gif');
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   color: var(--tg-text);
 }
 

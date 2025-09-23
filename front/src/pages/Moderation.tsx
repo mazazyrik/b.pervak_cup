@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { AuthTokenBar } from '@shared/ui/AuthTokenBar'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@shared/api/http'
 import type { Post } from '@entities/post/model/types'
@@ -36,7 +37,9 @@ export function Moderation() {
   }, [refetch])
 
   return (
-    <div className='p-4'>
+    <div className='p-0'>
+      <AuthTokenBar />
+      <div className='p-4'>
       <div className='text-xl font-semibold mb-3 slide-up'>Модерация</div>
       {isLoading && (
         <div className='columns-2 gap-2 sm:columns-3'>
@@ -75,6 +78,7 @@ export function Moderation() {
           <img src={preview} alt='' className='max-w-[92vw] max-h-[80vh] rounded-xl shadow-2xl' />
         </div>
       )}
+      </div>
     </div>
   )
 }
