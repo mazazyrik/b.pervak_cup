@@ -611,7 +611,7 @@ async def cmd_letsgo(message: Message, bot: Bot) -> None:
     async def send_safe(chat_id: int) -> None:
         try:
             await bot.send_message(chat_id, text)
-            asyncio.sleep(20)
+            await asyncio.sleep(20)
         except Exception:
             pass
     tasks: List[asyncio.Task] = []

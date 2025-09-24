@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from app.src.crud import Match, Team, Bet, User
 from app.src.schemas.match import MatchCreate, MatchUpdate, MatchOut
@@ -119,6 +120,7 @@ async def update_match(
                 }
                 logger.info(f'Sending message to Kafka: {package}')
                 await send_message_to_kafka(package, 'push')
+                await asyncio.sleep(3)
 
     if update_data:
         await Match.filter(id=match_id).update(**update_data)
