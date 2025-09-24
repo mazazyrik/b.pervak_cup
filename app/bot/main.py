@@ -26,7 +26,7 @@ logging.basicConfig(
 )
 
 API_BASE_URL = os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')
-BOT_TOKEN = '7149556054:AAFPIKcoj97DvflYdaCVlFtbNRJb4QKb87I'
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 MINI_APP_URL = 'https://b-pervak.3utilities.com/'
 RANEPASPORT_CHANNEL = os.getenv('RANEPASPORT_CHANNEL', '@ranepasport')
 BALBESCREW_CHANNEL = os.getenv('BALBESCREW_CHANNEL', '@balbescrew')
@@ -592,11 +592,15 @@ async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
 
 
 @router.message(F.text.lower() == 'административная ответственность')
-async def send_easter_egg(message: Message) -> None:
+async def send_easter_egg(message: Message, bot: Bot) -> None:
     photo = FSInputFile(str(path_to_easter_egg))
     await message.bot.send_photo(
         chat_id=message.from_user.id,
         photo=photo,
+    )
+    await bot.send_message(
+        chat_id=387435447,
+        text=f'{message.from_user.username} попал на админскую ответственность',
     )
 
 
