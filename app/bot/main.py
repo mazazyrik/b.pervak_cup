@@ -611,12 +611,13 @@ async def cmd_letsgo(message: Message, bot: Bot) -> None:
     async def send_safe(chat_id: int) -> None:
         try:
             await bot.send_message(chat_id, text)
-            await asyncio.sleep(20)
         except Exception:
             pass
     tasks: List[asyncio.Task] = []
     for uid in users.keys():
         tasks.append(asyncio.create_task(send_safe(uid)))
+        await asyncio.sleep(20)
+
     if tasks:
         await asyncio.gather(*tasks, return_exceptions=True)
     await message.answer('Готово')
