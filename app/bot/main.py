@@ -1,6 +1,7 @@
 import asyncio
 import os
 import logging
+from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 import httpx
 import json
@@ -44,6 +45,28 @@ USER_AGREEMENT_TEXT = (
 )
 AGREE_CALLBACK_DATA = 'user_agreement_agree'
 DISAGREE_CALLBACK_DATA = 'user_agreement_disagree'
+DATA_FILE = Path(__file__).parent / 'ids.txt'
+
+
+def _read_users() -> Dict[int, str]:
+    users: Dict[int, str] = {}
+    if DATA_FILE.exists():
+        text = DATA_FILE.read_text(encoding='utf-8')
+        for raw in text.splitlines():
+            raw = raw.strip()
+            if not raw:
+                continue
+            parts = raw.split(' ', 1)
+            try:
+                uid = int(parts[0])
+            except Exception:
+                continue
+            uname = ''
+            if len(parts) > 1:
+                uname = parts[1].strip()
+            if uid not in users:
+                users[uid] = uname
+    return users
 
 
 def _normalize_channel(value: str) -> str:
@@ -554,7 +577,7 @@ async def push(topic: str, bot: Bot, client: KafkaClient) -> None:
     async for message in client.consume(topic):
         if topic == 'push':
             package = json.loads(message)
-            fin_message = 'Поздравляем!' + package['res']
+            fin_message = 'Поздравляем! ' + package['res']
             try:
                 base_dir = os.path.dirname(os.path.abspath(__file__))
                 photo_path = os.path.join(base_dir, 'bot_static', 'score.png')
@@ -577,6 +600,27 @@ async def send_easter_egg(message: Message) -> None:
     )
 
 
+@router.message(Command('letsgo'))
+async def cmd_letsgo(message: Message, bot: Bot) -> None:
+    users = _read_users()
+    text = (
+        'Время пришло! '
+        'Отправляй /start и становись частью Кубка Первокурссников!'
+    )
+
+    async def send_safe(chat_id: int) -> None:
+        try:
+            await bot.send_message(chat_id, text)
+        except Exception:
+            pass
+    tasks: List[asyncio.Task] = []
+    for uid in users.keys():
+        tasks.append(asyncio.create_task(send_safe(uid)))
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+    await message.answer('Готово')
+
+
 async def main() -> None:
     if not BOT_TOKEN:
         raise RuntimeError('BOT_TOKEN is required')
@@ -597,13 +641,13 @@ async def main() -> None:
     dp.callback_query.outer_middleware.register(api_injector)
     consumer_task = asyncio.create_task(push('push', bot, kafka_client))
     try:
-        await dp.start_polling(
-            bot,
-            allowed_updates=dp.resolve_used_update_types(),
-        )
         await bot.send_message(
             chat_id=387435447,
             text='Бот запущен',
+        )
+        await dp.start_polling(
+            bot,
+            allowed_updates=dp.resolve_used_update_types(),
         )
     finally:
         if consumer_task:

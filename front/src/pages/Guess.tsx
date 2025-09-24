@@ -115,9 +115,9 @@ export function Guess() {
       setScores((s) => ({ ...s, [m.id]: res.data.result }))
       setLocked((l) => ({ ...l, [m.id]: true }))
       qc.invalidateQueries({ queryKey: ['bets', 'byUser', effectiveTgId] })
-      toast.success('Ставка принята')
+      toast.success('Прогноз принят')
     } catch (e: any) {
-      toast.error('Не удалось отправить ставку')
+      toast.error('Не удалось отправить прогноз')
     } finally {
       setPending((p) => ({ ...p, [m.id]: false }))
     }
@@ -159,7 +159,7 @@ export function Guess() {
           </div>
         </div>
         <div className='mt-3 flex justify-center'>
-          <button disabled={isLocked || !ok || !!pending[m.id]} onClick={() => submit(m)} className={'px-4 py-2 rounded-full text-sm button-pop ' + (isLocked ? 'bg-neutral-800 text-neutral-400' : ok ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400')}>{isLocked ? 'Ставка принята' : pending[m.id] ? '...' : 'Поставить'}</button>
+          <button disabled={isLocked || !ok || !!pending[m.id]} onClick={() => submit(m)} className={'px-4 py-2 rounded-full text-sm button-pop ' + (isLocked ? 'bg-neutral-800 text-neutral-400' : ok ? 'bg-white text-black' : 'bg-neutral-800 text-neutral-400')}>{isLocked ? 'Прогноз принят' : pending[m.id] ? '...' : 'Поставить'}</button>
         </div>
       </div>
     )
@@ -212,7 +212,7 @@ export function Guess() {
             )}
           </div>
         </div>
-        <div className='text-sm mb-2 opacity-80 slide-up'>Матчи для ставки</div>
+        <div className='text-sm mb-2 opacity-80 slide-up'>Матчи для прогноза</div>
         {matchesQ.isLoading || teamsQ.isLoading ? (
           <div className='space-y-3'>
             {Array.from({ length: 3 }).map((_, i) => (

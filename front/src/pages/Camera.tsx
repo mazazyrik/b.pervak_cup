@@ -23,7 +23,7 @@ export function Camera() {
       <div className='flex-1' />
       <img src='https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/photo.png' alt='' className='w-full max-w-sm rounded-xl slide-up' />
       <div className='text-center text-sm italic opacity-80 text-white max-w-sm slide-up' style={{ animationDelay: '80ms' }}>
-        Запечатли свои лучшие моменты с Кубка Первокурсника, и они появятся в ленте!
+        Запечатли свои лучшие моменты с Кубка Первокурсников, и они появятся в ленте!
       </div>
       <div className='flex-1' />
       <div className='w-full max-w-sm button-pop'>
