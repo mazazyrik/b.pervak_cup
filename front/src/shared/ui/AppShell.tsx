@@ -14,7 +14,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className='fixed inset-0 -z-10 bg-black' style={{ backgroundImage: 'none', filter: 'brightness(0.25)' }} />
       <BackButton />
       <div className='flex-1'>{children}</div>
-      {showAuthOverlay && <AuthRequiredOverlay hidden={hideOverlay} />}
+      {showAuthOverlay && <AuthRequiredOverlay hidden={hideOverlay || pathname.startsWith('/moderation')} />}
     </div>
   )
 }

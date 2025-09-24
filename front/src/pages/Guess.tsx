@@ -169,7 +169,17 @@ export function Guess() {
   const list = matchesQ.data || []
 
   return (
-    <div className='min-h-dvh px-4 py-6 flex flex-col items-center gap-4'>
+    <div
+      className='min-h-dvh px-4 py-6 flex flex-col items-center gap-4'
+      style={{
+        backgroundImage:
+          'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url(https://raw.githubusercontent.com/mazazyrik/b.pervak_cup/refs/heads/main/front/public/zalip%20b.gif)',
+        backgroundBlendMode: 'multiply',
+        backgroundSize: 'cover, cover',
+        backgroundPosition: 'center 0, center 0',
+        backgroundRepeat: 'no-repeat, repeat-y'
+      }}
+    >
       <img src='/logo_pages.png' alt='' className='h-8 object-contain fade-in' />
       <div className='w-full max-w-sm text-center'>
         <div className='text-xl font-semibold mb-3 slide-up'>Угадай исход</div>

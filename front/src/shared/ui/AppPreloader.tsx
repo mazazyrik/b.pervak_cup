@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useRouterState } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@shared/api/http'
 import type { Post } from '@entities/post/model/types'
@@ -20,6 +21,7 @@ export function AppPreloader() {
   const [ready, setReady] = useState(false)
   const [fading, setFading] = useState(false)
   const qc = useQueryClient()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   useEffect(() => {
     const run = async () => {
@@ -52,7 +54,7 @@ export function AppPreloader() {
   }, [qc])
 
   const onTransitionEnd = () => setReady(true)
-  if (ready) return null
+  if (ready || pathname.startsWith('/moderation')) return null
   return (
     <div
       className={'fixed inset-0 z-[9999] bg-black transition-opacity duration-700 ' + (fading ? 'opacity-0 pointer-events-none' : 'opacity-100')}
